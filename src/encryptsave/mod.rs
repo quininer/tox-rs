@@ -5,28 +5,6 @@ pub const PASS_KEY_LENGTH: usize = 32;
 pub const PASS_SALT_LENGTH: usize = 32;
 pub const PASS_ENCRYPTION_EXTRA_LENGTH: usize = 80;
 
-/// Get out & err.
-macro_rules! get_out {
-    ( $out:ident <- $rexpr:expr, $err:ident, $r:expr ) => {
-        unsafe {
-            let mut $out = $rexpr;
-            let mut $err = ::std::mem::uninitialized();
-            if $r != 0 {
-                Ok($out)
-            } else {
-                Err($err)
-            }
-        }
-    };
-    ( $out:ident, $err:ident, $r:expr ) => {
-        get_out!(
-            $out <- ::std::mem::uninitialized(),
-            $err,
-            $r
-        )
-    }
-}
-
 
 /// Determining whether the data is encrypted.
 pub fn is_encrypted(data: &[u8]) -> bool {
@@ -62,7 +40,7 @@ pub struct ToxPassKey {
 #[allow(unused_mut)]
 impl ToxPassKey {
     /// Generate ToxPassKey, using a random salt.
-    pub fn new(passphrase: &[u8]) -> Result<ToxPassKey, ffi::TOX_ERR_KEY_DERIVATION>  {
+    pub fn new(passphrase: &[u8]) -> Result<ToxPassKey, ffi::TOX_ERR_KEY_DERIVATION> {
         let out = try!(get_out!(
             out,
             err,
@@ -144,6 +122,7 @@ impl ToxPassKey {
         )
     }
 }
+
 
 /// use passphrase encryption
 pub fn pass_encrypt(passphrase: &[u8], data: &[u8]) -> Result<Vec<u8>, ffi::TOX_ERR_ENCRYPTION> {
