@@ -8,7 +8,7 @@ pub const PASS_ENCRYPTION_EXTRA_LENGTH: usize = 80;
 
 /// Determining whether the data is encrypted.
 pub fn is_encrypted(data: &[u8]) -> bool {
-    unsafe { ffi::tox_is_data_encrypted(data.as_ptr()) != 0 }
+    unsafe { ffi::tox_is_data_encrypted(data.as_ptr()) }
 }
 
 

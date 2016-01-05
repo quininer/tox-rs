@@ -26,6 +26,6 @@ impl Tox {
 
 impl Drop for Tox {
     fn drop(&mut self) {
-        unsafe { ffi::tox_kill(self.core) }
+        unsafe { ffi::tox_kill(self.core); }
     }
 }

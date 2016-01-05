@@ -7,5 +7,9 @@ build = "build.rs"
 [dependencies]
 libc = "*"
 
-[build-dependencies.bindgen]
-git = "https://github.com/crabtw/rust-bindgen.git"
+[build-dependencies.ffigen]
+# git = "https://github.com/quininer/rust-ffigen.git"
+path = "../../repos/rust-ffigen"
+
+# [build-dependencies.bindgen]
+# git = "https://github.com/crabtw/rust-bindgen.git"

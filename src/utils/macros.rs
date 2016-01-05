@@ -4,7 +4,7 @@
         unsafe {
             let mut $out = $rexpr;
             let mut $err = ::std::mem::uninitialized();
-            if $r != 0 {
+            if $r {
                 Ok($out)
             } else {
                 Err($err)

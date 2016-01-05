@@ -4,7 +4,7 @@ use super::*;
 
 #[derive(Copy, Clone)]
 pub struct ToxOptions {
-    pub opts: ffi::Struct_Tox_Options
+    pub opts: ffi::Tox_Options
 }
 
 impl ToxOptions {
@@ -18,12 +18,12 @@ impl ToxOptions {
     }
 
     pub fn ipv6(mut self, enable: bool) -> ToxOptions {
-        self.opts.ipv6_enabled = enable as u8;
+        self.opts.ipv6_enabled = enable;
         self
     }
 
     pub fn udp(mut self, enable: bool) -> ToxOptions {
-        self.opts.udp_enabled = enable as u8;
+        self.opts.udp_enabled = enable;
         self
     }
 
@@ -42,7 +42,7 @@ impl ToxOptions {
     }
 
     pub fn from(mut self, data: &[u8]) -> ToxOptions {
-        self.opts.savedata_type = ffi::TOX_SAVEDATA_TYPE_TOX_SAVE;
+        self.opts.savedata_type = ffi::TOX_SAVEDATA_TYPE::TOX_SAVEDATA_TYPE_TOX_SAVE;
         self.opts.savedata_data = data.as_ptr();
         self.opts.savedata_length = data.len();
         self
