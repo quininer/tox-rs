@@ -4,6 +4,7 @@ pub mod utils;
 pub use super::core::utils::ToxOptions;
 
 
+#[derive(Clone, Debug)]
 pub struct Tox {
     core: *mut ffi::Tox
 }

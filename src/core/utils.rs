@@ -2,7 +2,7 @@ use std::ffi::{ CString, NulError };
 use super::*;
 
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct ToxOptions {
     pub opts: ffi::Tox_Options
 }

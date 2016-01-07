@@ -12,7 +12,7 @@ pub fn is_encrypted(data: &[u8]) -> bool {
 }
 
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ToxPassKey {
     passkey: ffi::TOX_PASS_KEY
 }
@@ -27,23 +27,18 @@ pub struct ToxPassKey {
 /// let passphrase = b"tox-rs";
 /// let data = b"Tox on Rust, use mio.";
 ///
-/// let ciphertext = ToxPassKey::new(passphrase).ok().unwrap()
-///     .encrypt(data).ok().unwrap();
-/// let plaintext = ToxPassKey::from(passphrase, &ciphertext).ok().unwrap()
-///     .decrypt(&ciphertext).ok().unwrap();
+/// let ciphertext = ToxPassKey::new(passphrase).unwrap()
+///     .encrypt(data).unwrap();
+/// let plaintext = ToxPassKey::from(passphrase, &ciphertext).unwrap()
+///     .decrypt(&ciphertext).unwrap();
 ///
-/// assert_eq!(
-///     String::from_utf8_lossy(data),
-///     String::from_utf8_lossy(&plaintext)
-/// );
+/// assert_eq!(data.to_vec(), plaintext);
 /// ```
-#[allow(unused_mut)]
 impl ToxPassKey {
     /// Generate ToxPassKey, using a random salt.
     pub fn new(passphrase: &[u8]) -> Result<ToxPassKey, ffi::TOX_ERR_KEY_DERIVATION> {
         let out = try!(get_out!(
-            out,
-            err,
+            out, err,
             ffi::tox_derive_key_from_pass(
                 passphrase.as_ptr(),
                 passphrase.len(),
@@ -68,8 +63,7 @@ impl ToxPassKey {
     /// Generate ToxPassKey, using the specified salt.
     pub fn with(passphrase: &[u8], salt: Vec<u8>) -> Result<ToxPassKey, ffi::TOX_ERR_KEY_DERIVATION> {
         let out = try!(get_out!(
-            out,
-            err,
+            out, err,
             ffi::tox_derive_key_with_salt(
                 passphrase.as_ptr(),
                 passphrase.len(),
