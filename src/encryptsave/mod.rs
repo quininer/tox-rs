@@ -1,4 +1,5 @@
-pub mod ffi;
+mod ffi;
+pub mod error;
 
 
 pub const PASS_KEY_LENGTH: usize = 32;
@@ -36,7 +37,7 @@ pub struct ToxPassKey {
 /// ```
 impl ToxPassKey {
     /// Generate ToxPassKey, using a random salt.
-    pub fn new(passphrase: &[u8]) -> Result<ToxPassKey, ffi::TOX_ERR_KEY_DERIVATION> {
+    pub fn new(passphrase: &[u8]) -> Result<ToxPassKey, error::KeyDerivationError> {
         let out = try!(get_out!(
             out, err,
             ffi::tox_derive_key_from_pass(
@@ -51,7 +52,7 @@ impl ToxPassKey {
     }
 
     /// Generate Tox PassKey, read salt from the data.
-    pub fn from(passphrase: &[u8], data: &[u8]) -> Result<ToxPassKey, ffi::TOX_ERR_KEY_DERIVATION> {
+    pub fn from(passphrase: &[u8], data: &[u8]) -> Result<ToxPassKey, error::KeyDerivationError> {
         ToxPassKey::with(passphrase, unsafe {
             let mut salt = Vec::with_capacity(PASS_SALT_LENGTH);
             salt.set_len(PASS_SALT_LENGTH);
@@ -61,7 +62,7 @@ impl ToxPassKey {
     }
 
     /// Generate ToxPassKey, using the specified salt.
-    pub fn with(passphrase: &[u8], salt: Vec<u8>) -> Result<ToxPassKey, ffi::TOX_ERR_KEY_DERIVATION> {
+    pub fn with(passphrase: &[u8], salt: Vec<u8>) -> Result<ToxPassKey, error::KeyDerivationError> {
         let out = try!(get_out!(
             out, err,
             ffi::tox_derive_key_with_salt(
@@ -77,7 +78,7 @@ impl ToxPassKey {
     }
 
     /// encryption
-    pub fn encrypt(&self, data: &[u8]) -> Result<Vec<u8>, ffi::TOX_ERR_ENCRYPTION> {
+    pub fn encrypt(&self, data: &[u8]) -> Result<Vec<u8>, error::EncrytpionError> {
         get_out!(
             out <- {
                 let len = data.len() + PASS_ENCRYPTION_EXTRA_LENGTH;
@@ -97,7 +98,7 @@ impl ToxPassKey {
     }
 
     /// decryption
-    pub fn decrypt(&self, data: &[u8]) -> Result<Vec<u8>, ffi::TOX_ERR_DECRYPTION> {
+    pub fn decrypt(&self, data: &[u8]) -> Result<Vec<u8>, error::DecryptionError> {
         get_out!(
             out <- {
                 let len = data.len() - PASS_ENCRYPTION_EXTRA_LENGTH;
@@ -119,7 +120,7 @@ impl ToxPassKey {
 
 
 /// use passphrase encryption
-pub fn pass_encrypt(passphrase: &[u8], data: &[u8]) -> Result<Vec<u8>, ffi::TOX_ERR_ENCRYPTION> {
+pub fn pass_encrypt(passphrase: &[u8], data: &[u8]) -> Result<Vec<u8>, error::EncrytpionError> {
     get_out!(
         out <- {
             let len = data.len() + PASS_ENCRYPTION_EXTRA_LENGTH;
@@ -140,7 +141,7 @@ pub fn pass_encrypt(passphrase: &[u8], data: &[u8]) -> Result<Vec<u8>, ffi::TOX_
 }
 
 /// use passphrase decryption
-pub fn pass_decrypt(passphrase: &[u8], data: &[u8]) -> Result<Vec<u8>, ffi::TOX_ERR_DECRYPTION> {
+pub fn pass_decrypt(passphrase: &[u8], data: &[u8]) -> Result<Vec<u8>, error::DecryptionError> {
     get_out!(
         out <- {
             let len = data.len() - PASS_ENCRYPTION_EXTRA_LENGTH;

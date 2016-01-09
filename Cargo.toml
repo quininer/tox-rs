@@ -5,11 +5,8 @@ authors = ["quininer <quininer@live.com>"]
 build = "build.rs"
 
 [dependencies]
-libc = "*"
+libc = "0.2.*"
 
 [build-dependencies.ffigen]
-# git = "https://github.com/quininer/rust-ffigen.git"
-path = "../../repos/rust-ffigen"
-
-# [build-dependencies.bindgen]
-# git = "https://github.com/crabtw/rust-bindgen.git"
+version = "0.1.*"
+git = "https://github.com/quininer/rust-ffigen.git"

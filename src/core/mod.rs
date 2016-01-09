@@ -1,4 +1,5 @@
-pub mod ffi;
+mod ffi;
+pub mod error;
 pub mod utils;
 
 pub use super::core::utils::ToxOptions;
@@ -10,7 +11,7 @@ pub struct Tox {
 }
 
 impl Tox {
-    pub fn new(opts: ToxOptions) -> Result<Tox, ffi::TOX_ERR_NEW> {
+    pub fn new(opts: ToxOptions) -> Result<Tox, error::NewError> {
         Ok(Tox { core: try_err!(err, ffi::tox_new(&opts.opts, &mut err)) })
     }
 

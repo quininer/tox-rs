@@ -1,5 +1,10 @@
 use std::ffi::{ CString, NulError };
 use super::*;
+use super::ffi;
+pub use super::ffi::{
+    TOX_SAVEDATA_TYPE as SaveDataType,
+    TOX_PROXY_TYPE as ProxyType
+};
 
 
 #[derive(Copy, Clone, Debug)]
@@ -27,8 +32,8 @@ impl ToxOptions {
         self
     }
 
-    pub fn proxy(mut self, ptype: ffi::TOX_PROXY_TYPE, host: &str, port: u16) -> Result<ToxOptions, NulError> {
-        self.opts.proxy_type = ptype;
+    pub fn proxy(mut self, pty: ProxyType, host: &str, port: u16) -> Result<ToxOptions, NulError> {
+        self.opts.proxy_type = pty;
         self.opts.proxy_host = try!(CString::new(host)).as_ptr();
         self.opts.proxy_port = port;
         Ok(self)
@@ -42,13 +47,13 @@ impl ToxOptions {
     }
 
     pub fn from(mut self, data: &[u8]) -> ToxOptions {
-        self.opts.savedata_type = ffi::TOX_SAVEDATA_TYPE::TOX_SAVEDATA_TYPE_TOX_SAVE;
+        self.opts.savedata_type = SaveDataType::TOX_SAVE;
         self.opts.savedata_data = data.as_ptr();
         self.opts.savedata_length = data.len();
         self
     }
 
-    pub fn generate(self) -> Result<Tox, ffi::TOX_ERR_NEW> {
+    pub fn generate(self) -> Result<Tox, error::NewError> {
         Tox::new(self)
     }
 }
