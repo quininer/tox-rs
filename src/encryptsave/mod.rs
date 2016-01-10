@@ -37,8 +37,8 @@ pub struct ToxPassKey {
 /// ```
 impl ToxPassKey {
     /// Generate ToxPassKey, using a random salt.
-    pub fn new(passphrase: &[u8]) -> Result<ToxPassKey, error::KeyDerivationError> {
-        let out = try!(get_out!(
+    pub fn new(passphrase: &[u8]) -> Result<ToxPassKey, error::KeyDerivationErr> {
+        let out = try!(out!( out
             out, err,
             ffi::tox_derive_key_from_pass(
                 passphrase.as_ptr(),
@@ -52,18 +52,17 @@ impl ToxPassKey {
     }
 
     /// Generate Tox PassKey, read salt from the data.
-    pub fn from(passphrase: &[u8], data: &[u8]) -> Result<ToxPassKey, error::KeyDerivationError> {
+    pub fn from(passphrase: &[u8], data: &[u8]) -> Result<ToxPassKey, error::KeyDerivationErr> {
         ToxPassKey::with(passphrase, unsafe {
-            let mut salt = Vec::with_capacity(PASS_SALT_LENGTH);
-            salt.set_len(PASS_SALT_LENGTH);
+            let mut salt = vec_with!(PASS_KEY_LENGTH);
             ffi::tox_get_salt(data.as_ptr(), salt.as_mut_ptr());
             salt
         })
     }
 
     /// Generate ToxPassKey, using the specified salt.
-    pub fn with(passphrase: &[u8], salt: Vec<u8>) -> Result<ToxPassKey, error::KeyDerivationError> {
-        let out = try!(get_out!(
+    pub fn with(passphrase: &[u8], salt: Vec<u8>) -> Result<ToxPassKey, error::KeyDerivationErr> {
+        let out = try!(out!( out
             out, err,
             ffi::tox_derive_key_with_salt(
                 passphrase.as_ptr(),
@@ -78,14 +77,9 @@ impl ToxPassKey {
     }
 
     /// encryption
-    pub fn encrypt(&self, data: &[u8]) -> Result<Vec<u8>, error::EncrytpionError> {
-        get_out!(
-            out <- {
-                let len = data.len() + PASS_ENCRYPTION_EXTRA_LENGTH;
-                let mut out = Vec::with_capacity(len);
-                out.set_len(len);
-                out
-            },
+    pub fn encrypt(&self, data: &[u8]) -> Result<Vec<u8>, error::EncrytpionErr> {
+        out!( out
+            out <- vec_with!(data.len() + PASS_ENCRYPTION_EXTRA_LENGTH),
             err,
             ffi::tox_pass_key_encrypt(
                 data.as_ptr(),
@@ -98,14 +92,9 @@ impl ToxPassKey {
     }
 
     /// decryption
-    pub fn decrypt(&self, data: &[u8]) -> Result<Vec<u8>, error::DecryptionError> {
-        get_out!(
-            out <- {
-                let len = data.len() - PASS_ENCRYPTION_EXTRA_LENGTH;
-                let mut out = Vec::with_capacity(len);
-                out.set_len(len);
-                out
-            },
+    pub fn decrypt(&self, data: &[u8]) -> Result<Vec<u8>, error::DecryptionErr> {
+        out!( out
+            out <- vec_with!(data.len() - PASS_ENCRYPTION_EXTRA_LENGTH),
             err,
             ffi::tox_pass_key_decrypt(
                 data.as_ptr(),
@@ -120,14 +109,9 @@ impl ToxPassKey {
 
 
 /// use passphrase encryption
-pub fn pass_encrypt(passphrase: &[u8], data: &[u8]) -> Result<Vec<u8>, error::EncrytpionError> {
-    get_out!(
-        out <- {
-            let len = data.len() + PASS_ENCRYPTION_EXTRA_LENGTH;
-            let mut out = Vec::with_capacity(len);
-            out.set_len(len);
-            out
-        },
+pub fn pass_encrypt(passphrase: &[u8], data: &[u8]) -> Result<Vec<u8>, error::EncrytpionErr> {
+    out!( out
+        out <- vec_with!(data.len() + PASS_ENCRYPTION_EXTRA_LENGTH),
         err,
         ffi::tox_pass_encrypt(
             data.as_ptr(),
@@ -141,14 +125,9 @@ pub fn pass_encrypt(passphrase: &[u8], data: &[u8]) -> Result<Vec<u8>, error::En
 }
 
 /// use passphrase decryption
-pub fn pass_decrypt(passphrase: &[u8], data: &[u8]) -> Result<Vec<u8>, error::DecryptionError> {
-    get_out!(
-        out <- {
-            let len = data.len() - PASS_ENCRYPTION_EXTRA_LENGTH;
-            let mut out = Vec::with_capacity(len);
-            out.set_len(len);
-            out
-        },
+pub fn pass_decrypt(passphrase: &[u8], data: &[u8]) -> Result<Vec<u8>, error::DecryptionErr> {
+    out!( out
+        out <- vec_with!(data.len() - PASS_ENCRYPTION_EXTRA_LENGTH),
         err,
         ffi::tox_pass_decrypt(
             data.as_ptr(),

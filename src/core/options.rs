@@ -1,5 +1,4 @@
 use std::ffi::{ CString, NulError };
-use super::*;
 use super::ffi;
 pub use super::ffi::{
     TOX_SAVEDATA_TYPE as SaveDataType,
@@ -53,7 +52,7 @@ impl ToxOptions {
         self
     }
 
-    pub fn generate(self) -> Result<Tox, error::NewError> {
-        Tox::new(self)
+    pub fn generate(self) -> Result<super::Tox, super::error::NewErr> {
+        super::Tox::new(self)
     }
 }
