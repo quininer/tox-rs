@@ -1,5 +1,5 @@
 use std::ffi::CString;
-use std::time::Duration;
+use chrono::Duration;
 use super::{ ffi, Tox, error, vars };
 
 pub trait Network {
@@ -26,6 +26,7 @@ impl Network for Tox {
             )
         )
     }
+
     fn addtcprelay<S: AsRef<str>>(&mut self, address: &S, port: u16, public_key: &[u8]) -> Result<(), error::BootstrapErr> {
         let address = address.as_ref();
         out!( bool
@@ -39,20 +40,22 @@ impl Network for Tox {
             )
         )
     }
+
     fn interval(&self) -> Duration {
-        Duration::from_millis(unsafe {
-            ffi::tox_iteration_interval(self.core) as u64
-        })
+        Duration::milliseconds(unsafe { ffi::tox_iteration_interval(self.core) } as i64)
     }
+
     fn iterate(&mut self) {
         unsafe { ffi::tox_iterate(self.core) }
     }
+
     fn dhtid(&self) -> Vec<u8> {
         out!( get
             out <- vec_with!(vars::TOX_PUBLIC_KEY_SIZE),
             ffi::tox_self_get_dht_id(self.core, out.as_mut_ptr())
         )
     }
+
     fn udpport(&self) -> Result<u16, error::GetPortErr> {
         out!( err
             err,
@@ -62,6 +65,7 @@ impl Network for Tox {
             )
         )
     }
+
     fn tcpport(&self) -> Result<u16, error::GetPortErr> {
         out!( err
             err,

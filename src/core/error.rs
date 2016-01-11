@@ -1,3 +1,4 @@
+use rustc_serialize::hex::FromHexError;
 pub use super::ffi::{
     TOX_ERR_NEW as NewErr,
     TOX_ERR_FRIEND_ADD as AddFriendErr,
@@ -11,3 +12,17 @@ pub use super::ffi::{
     TOX_ERR_GET_PORT as GetPortErr,
     TOX_ERR_BOOTSTRAP as BootstrapErr
 };
+
+
+#[derive(Debug)]
+pub enum AddressParserErr {
+    InvalidLength,
+    InvalidChecksum,
+    HexError(FromHexError)
+}
+
+impl From<FromHexError> for AddressParserErr {
+    fn from(err: FromHexError) -> AddressParserErr {
+        AddressParserErr::HexError(err)
+    }
+}

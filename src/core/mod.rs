@@ -1,15 +1,17 @@
 mod ffi;
 pub mod error;
-pub mod options;
-pub mod friend;
 pub mod vars;
+pub mod options;
+mod friend;
 mod status;
 mod network;
+mod address;
 
 pub use core::options::ToxOptions;
-pub use core::status::Status;
+pub use core::status::{ Status, UserStatus, Connection };
 pub use core::network::Network;
-use core::friend::Friend;
+pub use core::friend::Friend;
+pub use core::address::{ PublicKey, Address };
 
 
 #[derive(Clone, Debug)]
@@ -30,11 +32,10 @@ impl Tox {
     }
 
     pub fn secretkey(&self) -> Vec<u8> {
-        unsafe {
-            let mut out = vec_with!(vars::TOX_SECRET_KEY_SIZE);
-            ffi::tox_self_get_secret_key(self.core, out.as_mut_ptr());
-            out
-        }
+        out!( get
+            out <- vec_with!(vars::TOX_SECRET_KEY_SIZE),
+            ffi::tox_self_get_secret_key(self.core, out.as_mut_ptr())
+        )
     }
 
     pub fn set_name<S: AsRef<[u8]>>(&mut self, name: &S) -> Result<(), error::InfoSetErr> {
@@ -49,10 +50,10 @@ impl Tox {
             )
         )
     }
-    pub fn set_nospam(&mut self, nospam: usize) {
-        unsafe { ffi::tox_self_set_nospam(self.core, nospam as ::libc::uint32_t) }
+    pub fn set_nospam(&mut self, nospam: u32) {
+        unsafe { ffi::tox_self_set_nospam(self.core, nospam) }
     }
-    pub fn set_status(&mut self, status: vars::UserStatus) {
+    pub fn set_status(&mut self, status: status::UserStatus) {
         unsafe { ffi::tox_self_set_status(self.core, status) }
     }
     pub fn set_status_message<S: AsRef<[u8]>>(&mut self, message: &S) -> Result<(), error::InfoSetErr> {
@@ -92,22 +93,22 @@ impl Tox {
             )
         ).map(|r| Friend::new(self.core, r))
     }
-    pub fn add_friend(&mut self, public_key: &[u8]) -> Result<Friend, error::AddFriendErr> {
+    pub fn add_friend(&mut self, public_key: PublicKey) -> Result<Friend, error::AddFriendErr> {
         out!( num
             err,
             ffi::tox_friend_add_norequest(
                 self.core,
-                public_key.as_ptr(),
+                public_key.raw.as_ptr(),
                 &mut err
             )
         ).map(|r| Friend::new(self.core, r))
     }
-    pub fn get_friend(&self, public_key: &[u8]) -> Result<Friend, error::PKGetFriendErr> {
+    pub fn get_friend(&self, public_key: PublicKey) -> Result<Friend, error::PKGetFriendErr> {
         out!( num
             err,
             ffi::tox_friend_by_public_key(
                 self.core,
-                public_key.as_ptr(),
+                public_key.raw.as_ptr(),
                 &mut err
             )
         ).map(|r| Friend::new(self.core, r))

@@ -1,5 +1,7 @@
+use chrono::NaiveDateTime;
 use super::{
-    ffi, error, vars, Status
+    ffi, error, vars, status,
+    Address, PublicKey, Status
 };
 
 pub struct Friend {
@@ -21,7 +23,7 @@ impl Friend {
             )
         )
     }
-    pub fn last(&self) -> Result<usize, error::GetFriendLastErr> {
+    pub fn last(&self) -> Result<NaiveDateTime, error::GetFriendLastErr> {
         out!((num <- ::libc::uint64_t)
             err,
             ffi::tox_friend_get_last_online(
@@ -29,7 +31,7 @@ impl Friend {
                 self.number,
                 &mut err
             )
-        ).map(|r| r as usize)
+        ).map(|r| NaiveDateTime::from_timestamp(r as i64, 0))
     }
     pub fn is_typing(&self) -> Result<bool, error::QueryFriendErr> {
         out!( err
@@ -65,11 +67,11 @@ impl Status for Friend {
         )
     }
 
-    fn address(&self) -> Result<Vec<u8>, ()> {
+    fn address(&self) -> Result<Address, ()> {
         unimplemented!()
     }
 
-    fn publickey(&self) -> Result<Vec<u8>, error::GetFriendPKErr> {
+    fn publickey(&self) -> Result<PublicKey, error::GetFriendPKErr> {
         out!( out
             out <- vec_with!(vars::TOX_PUBLIC_KEY_SIZE),
             err,
@@ -79,14 +81,14 @@ impl Status for Friend {
                 out.as_mut_ptr(),
                 &mut err
             )
-        )
+        ).map(|r| PublicKey::new(&r))
     }
 
-    fn nospam(&self) -> Result<usize, ()> {
+    fn nospam(&self) -> Result<u32, ()> {
         unimplemented!()
     }
 
-    fn status(&self) -> Result<vars::UserStatus, error::QueryFriendErr> {
+    fn status(&self) -> Result<status::UserStatus, error::QueryFriendErr> {
         out!( err
             err,
             ffi::tox_friend_get_status(
@@ -118,7 +120,7 @@ impl Status for Friend {
         )
     }
 
-    fn connection_status(&self) -> Result<vars::Connection, error::QueryFriendErr> {
+    fn connection_status(&self) -> Result<status::Connection, error::QueryFriendErr> {
         out!( err
             err,
             ffi::tox_friend_get_connection_status(
