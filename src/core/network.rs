@@ -1,10 +1,10 @@
 use std::ffi::CString;
 use chrono::Duration;
-use super::{ ffi, Tox, error, vars };
+use super::{ ffi, Tox, error, vars, PublicKey };
 
 pub trait Network {
-    fn bootstrap<S: AsRef<str>>(&mut self, address: &S, port: u16, public_key: &[u8]) -> Result<(), error::BootstrapErr>;
-    fn addtcprelay<S: AsRef<str>>(&mut self, address: &S, port: u16, public_key: &[u8]) -> Result<(), error::BootstrapErr>;
+    fn bootstrap<S: AsRef<str>>(&mut self, address: &S, port: u16, public_key: PublicKey) -> Result<(), error::BootstrapErr>;
+    fn addtcprelay<S: AsRef<str>>(&mut self, address: &S, port: u16, public_key: PublicKey) -> Result<(), error::BootstrapErr>;
     fn interval(&self) -> Duration;
     fn iterate(&mut self);
     fn dhtid(&self) -> Vec<u8>;
@@ -13,29 +13,29 @@ pub trait Network {
 }
 
 impl Network for Tox {
-    fn bootstrap<S: AsRef<str>>(&mut self, address: &S, port: u16, public_key: &[u8]) -> Result<(), error::BootstrapErr> {
-        let address = address.as_ref();
+    fn bootstrap<S: AsRef<str>>(&mut self, ipaddress: &S, port: u16, public_key: PublicKey) -> Result<(), error::BootstrapErr> {
+        let ipaddress = ipaddress.as_ref();
         out!( bool
             err,
             ffi::tox_bootstrap(
                 self.core,
-                CString::from_vec_unchecked(address.bytes().collect()).as_ptr(),
+                CString::from_vec_unchecked(ipaddress.bytes().collect()).as_ptr(),
                 port,
-                public_key.as_ptr(),
+                public_key.as_ref().as_ptr(),
                 &mut err
             )
         )
     }
 
-    fn addtcprelay<S: AsRef<str>>(&mut self, address: &S, port: u16, public_key: &[u8]) -> Result<(), error::BootstrapErr> {
-        let address = address.as_ref();
+    fn addtcprelay<S: AsRef<str>>(&mut self, ipaddress: &S, port: u16, public_key: PublicKey) -> Result<(), error::BootstrapErr> {
+        let ipaddress = ipaddress.as_ref();
         out!( bool
             err,
             ffi::tox_add_tcp_relay(
                 self.core,
-                CString::from_vec_unchecked(address.bytes().collect()).as_ptr(),
+                CString::from_vec_unchecked(ipaddress.bytes().collect()).as_ptr(),
                 port,
-                public_key.as_ptr(),
+                public_key.as_ref().as_ptr(),
                 &mut err
             )
         )

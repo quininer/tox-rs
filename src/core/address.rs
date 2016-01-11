@@ -16,12 +16,12 @@ macro_rules! to_slice {
 
 #[derive(PartialEq, Clone, Debug)]
 pub struct PublicKey {
-    pub raw: [u8; TOX_PUBLIC_KEY_SIZE]
+    raw: [u8; TOX_PUBLIC_KEY_SIZE]
 }
 
 #[derive(PartialEq, Clone, Debug)]
 pub struct Address {
-    pub publickey: PublicKey,
+    publickey: PublicKey,
     nospam: [u8; 4],
     checksum: [u8; 2]
 }
@@ -45,7 +45,7 @@ impl Address {
 
     pub fn out(&self) -> Vec<u8> {
         vec![
-            self.publickey.raw.to_vec(),
+            self.publickey.as_ref().to_vec(),
             self.nospam.to_vec(),
             self.checksum.to_vec()
         ].concat()
@@ -53,7 +53,7 @@ impl Address {
 
     pub fn check(&self) -> bool {
         let mut check = [0u8; 2];
-        for (i, &k) in self.publickey.raw.iter().enumerate() {
+        for (i, &k) in self.publickey.as_ref().iter().enumerate() {
             check[i % 2] ^= k;
         }
         for i in 0..4 {
@@ -72,7 +72,7 @@ impl Address {
 /// fn main() {
 ///     let hex = "EDF5A5BE8DFFC1DDFAACC71A0C0FCEEDE7BED4F3FBF9C54D502BE66A297DC374";
 ///     let pk: PublicKey = hex.parse().unwrap();
-///     assert_eq!(pk.raw.to_hex().to_uppercase(), hex);
+///     assert_eq!(pk.as_ref().to_hex().to_uppercase(), hex);
 /// }
 /// ```
 impl FromStr for PublicKey {
@@ -87,6 +87,13 @@ impl FromStr for PublicKey {
     }
 }
 
+impl AsRef<[u8]> for PublicKey {
+    fn as_ref(&self) -> &[u8] {
+        &self.raw
+    }
+}
+
+
 /// ```
 /// extern crate rustc_serialize;
 /// extern crate tox;
@@ -98,7 +105,7 @@ impl FromStr for PublicKey {
 ///     let hex = "EDF5A5BE8DFFC1DDFAACC71A0C0FCEEDE7BED4F3FBF9C54D502BE66A297DC37469CDD2311170";
 ///     let address: Address = hex.parse().unwrap();
 ///     assert_eq!(
-///         address.publickey.raw.to_hex().to_uppercase(),
+///         address.as_ref().as_ref().to_hex().to_uppercase(),
 ///         &hex[..TOX_PUBLIC_KEY_SIZE*2]
 ///     );
 /// }
@@ -122,5 +129,11 @@ impl FromStr for Address {
         } else {
             Err(error::AddressParserErr::InvalidLength)
         }
+    }
+}
+
+impl AsRef<PublicKey> for Address {
+    fn as_ref(&self) -> &PublicKey {
+        &self.publickey
     }
 }

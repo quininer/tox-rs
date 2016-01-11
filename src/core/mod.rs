@@ -80,13 +80,13 @@ impl Tox {
         )
     }
 
-    pub fn request_friend<S: AsRef<[u8]>>(&mut self, address: &[u8], message: &S) -> Result<Friend, error::AddFriendErr> {
+    pub fn request_friend<S: AsRef<[u8]>>(&mut self, address: Address, message: &S) -> Result<Friend, error::AddFriendErr> {
         let message = message.as_ref();
         out!( num
             err,
             ffi::tox_friend_add(
                 self.core,
-                address.as_ptr(),
+                address.out().as_ptr(),
                 message.as_ptr(),
                 message.len(),
                 &mut err
@@ -98,7 +98,7 @@ impl Tox {
             err,
             ffi::tox_friend_add_norequest(
                 self.core,
-                public_key.raw.as_ptr(),
+                public_key.as_ref().as_ptr(),
                 &mut err
             )
         ).map(|r| Friend::new(self.core, r))
@@ -108,7 +108,7 @@ impl Tox {
             err,
             ffi::tox_friend_by_public_key(
                 self.core,
-                public_key.raw.as_ptr(),
+                public_key.as_ref().as_ptr(),
                 &mut err
             )
         ).map(|r| Friend::new(self.core, r))
