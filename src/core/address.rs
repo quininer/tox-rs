@@ -42,6 +42,15 @@ impl Address {
             checksum: to_slice!(checksum, 2)
         }
     }
+
+    pub fn out(&self) -> Vec<u8> {
+        vec![
+            self.publickey.raw.to_vec(),
+            self.nospam.to_vec(),
+            self.checksum.to_vec()
+        ].concat()
+    }
+
     pub fn check(&self) -> bool {
         let mut check = [0u8; 2];
         for (i, &k) in self.publickey.raw.iter().enumerate() {

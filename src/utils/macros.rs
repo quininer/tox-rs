@@ -44,8 +44,8 @@ macro_rules! out {
             let mut $err = ::std::mem::uninitialized();
             let out = $exp;
             match $err as ::libc::c_int {
-                0 => Err($err),
-                _ => Ok(out)
+                0 => Ok(out),
+                _ => Err($err)
             }
         }
     };
