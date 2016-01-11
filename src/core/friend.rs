@@ -1,5 +1,5 @@
 use super::{
-    ffi, error, vars
+    ffi, error, vars, Status
 };
 
 pub struct Friend {
@@ -11,14 +11,36 @@ impl Friend {
     pub fn new(core: *mut ffi::Tox, number: ::libc::uint32_t) -> Friend {
         Friend { core: core, number: number }
     }
-}
-
-pub trait Status {
-    fn name(&self) -> Result<Vec<u8>, error::QueryFriendErr>;
-    fn publickey(&self) -> Result<Vec<u8>, error::GetFriendPKErr>;
-    fn status(&self) -> Result<vars::UserStatus, error::QueryFriendErr>;
-    fn status_message(&self) -> Result<Vec<u8>, error::QueryFriendErr>;
-    fn connection_status(&self) -> Result<vars::Connection, error::QueryFriendErr>;
+    pub fn delete(&mut self) -> Result<(), error::DelFriendErr> {
+        out!( bool
+            err,
+            ffi::tox_friend_delete(
+                self.core,
+                self.number,
+                &mut err
+            )
+        )
+    }
+    pub fn last(&self) -> Result<usize, error::GetFriendLastErr> {
+        out!((num <- ::libc::uint64_t)
+            err,
+            ffi::tox_friend_get_last_online(
+                self.core,
+                self.number,
+                &mut err
+            )
+        ).map(|r| r as usize)
+    }
+    pub fn is_typing(&self) -> Result<bool, error::QueryFriendErr> {
+        out!( err
+            err,
+            ffi::tox_friend_get_typing(
+                self.core,
+                self.number,
+                &mut err
+            )
+        )
+    }
 }
 
 impl Status for Friend {
@@ -43,6 +65,10 @@ impl Status for Friend {
         )
     }
 
+    fn address(&self) -> Result<Vec<u8>, ()> {
+        unimplemented!()
+    }
+
     fn publickey(&self) -> Result<Vec<u8>, error::GetFriendPKErr> {
         out!( out
             out <- vec_with!(vars::TOX_PUBLIC_KEY_SIZE),
@@ -54,6 +80,10 @@ impl Status for Friend {
                 &mut err
             )
         )
+    }
+
+    fn nospam(&self) -> Result<usize, ()> {
+        unimplemented!()
     }
 
     fn status(&self) -> Result<vars::UserStatus, error::QueryFriendErr> {

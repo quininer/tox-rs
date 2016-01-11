@@ -3,9 +3,13 @@ pub mod error;
 pub mod options;
 pub mod friend;
 pub mod vars;
+mod status;
+mod network;
 
 pub use core::options::ToxOptions;
-use core::friend::{ Friend, Status };
+pub use core::status::Status;
+pub use core::network::Network;
+use core::friend::Friend;
 
 
 #[derive(Clone, Debug)]
@@ -19,11 +23,17 @@ impl Tox {
     }
 
     pub fn save(&self) -> Vec<u8> {
+        out!( get
+            out <- vec_with!(ffi::tox_get_savedata_size(self.core)),
+            ffi::tox_get_savedata(self.core, out.as_mut_ptr())
+        )
+    }
+
+    pub fn secretkey(&self) -> Vec<u8> {
         unsafe {
-            let len = ffi::tox_get_savedata_size(self.core);
-            let mut data = vec_with!(len);
-            ffi::tox_get_savedata(self.core, data.as_mut_ptr());
-            data
+            let mut out = vec_with!(vars::TOX_SECRET_KEY_SIZE);
+            ffi::tox_self_get_secret_key(self.core, out.as_mut_ptr());
+            out
         }
     }
 
@@ -57,6 +67,17 @@ impl Tox {
             )
         )
     }
+    pub fn set_typing(&mut self, friend: Friend, typing: bool) -> Result<(), error::TypingSetErr> {
+        out!( bool
+            err,
+            ffi::tox_self_set_typing(
+                self.core,
+                friend.number,
+                typing,
+                &mut err
+            )
+        )
+    }
 
     pub fn request_friend<S: AsRef<[u8]>>(&mut self, address: &[u8], message: &S) -> Result<Friend, error::AddFriendErr> {
         let message = message.as_ref();
@@ -81,15 +102,15 @@ impl Tox {
             )
         ).map(|r| Friend::new(self.core, r))
     }
-    pub fn del_friend(&mut self, friend: Friend) -> Result<(), error::DelFriendErr> {
-        out!( bool
+    pub fn get_friend(&self, public_key: &[u8]) -> Result<Friend, error::PKGetFriendErr> {
+        out!( num
             err,
-            ffi::tox_friend_delete(
+            ffi::tox_friend_by_public_key(
                 self.core,
-                friend.number,
+                public_key.as_ptr(),
                 &mut err
             )
-        )
+        ).map(|r| Friend::new(self.core, r))
     }
     pub fn exists_friend(&self, friend: Friend) -> bool {
         unsafe { ffi::tox_friend_exists(self.core, friend.number) }
@@ -102,43 +123,6 @@ impl Tox {
                 .map(|&r| Friend::new(self.core, r))
                 .collect()
         }
-    }
-}
-
-impl Status for Tox {
-    fn name(&self) -> Result<Vec<u8>, error::QueryFriendErr> {
-        unsafe {
-            let mut out = vec_with!(ffi::tox_self_get_name_size(self.core));
-            ffi::tox_self_get_name(
-                self.core,
-                out.as_mut_ptr()
-            );
-            Ok(out)
-        }
-    }
-
-    fn publickey(&self) -> Result<Vec<u8>, error::GetFriendPKErr> {
-        unsafe {
-            let mut out = vec_with!(vars::TOX_PUBLIC_KEY_SIZE);
-            ffi::tox_self_get_public_key(self.core, out.as_mut_ptr());
-            Ok(out)
-        }
-    }
-
-    fn status(&self) -> Result<vars::UserStatus, error::QueryFriendErr> {
-        Ok(unsafe { ffi::tox_self_get_status(self.core) })
-    }
-
-    fn status_message(&self) -> Result<Vec<u8>, error::QueryFriendErr> {
-        unsafe {
-            let mut out = vec_with!(ffi::tox_self_get_status_message_size(self.core));
-            ffi::tox_self_get_status_message(self.core, out.as_mut_ptr());
-            Ok(out)
-        }
-    }
-
-    fn connection_status(&self) -> Result<vars::Connection, error::QueryFriendErr> {
-        Ok(unsafe { ffi::tox_self_get_connection_status(self.core) })
     }
 }
 

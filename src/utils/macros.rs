@@ -26,15 +26,18 @@ macro_rules! out {
             }
         }
     };
-    ( num $err:ident, $exp:expr ) => {
+    ( ( num <- $num:ty ) $err:ident, $exp:expr ) => {
         unsafe {
-            const MAX: ::libc::uint32_t = !0;
+            const MAX: $num = !0;
             let mut $err = ::std::mem::uninitialized();
             match $exp {
                 MAX => Err($err),
                 out @ _ => Ok(out)
             }
         }
+    };
+    ( num $err:ident, $exp:expr ) => {
+        out!( ( num <- ::libc::uint32_t ) $err, $exp )
     };
     ( err $err:ident, $exp:expr ) => {
         unsafe {
@@ -44,6 +47,13 @@ macro_rules! out {
                 0 => Err($err),
                 _ => Ok(out)
             }
+        }
+    };
+    ( get $out:ident <- $rexpr:expr, $exp:expr ) => {
+        unsafe {
+            let mut $out = $rexpr;
+            $exp;
+            $out
         }
     }
 }
