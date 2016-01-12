@@ -2,16 +2,18 @@ mod ffi;
 pub mod error;
 pub mod vars;
 pub mod options;
+pub mod status;
+pub mod chat;
 mod friend;
-mod status;
 mod network;
 mod address;
 
 pub use core::options::ToxOptions;
-pub use core::status::{ Status, UserStatus, Connection };
+pub use core::status::Status;
 pub use core::network::Network;
 pub use core::friend::Friend;
 pub use core::address::{ PublicKey, Address };
+pub use core::chat::Chat;
 
 
 #[derive(Clone, Debug)]
@@ -38,7 +40,7 @@ impl Tox {
         )
     }
 
-    pub fn set_name<S: AsRef<[u8]>>(&mut self, name: &S) -> Result<(), error::InfoSetErr> {
+    pub fn set_name<S: AsRef<[u8]>>(&mut self, name: S) -> Result<(), error::InfoSetErr> {
         let name = name.as_ref();
         out!( bool
             err,
@@ -56,7 +58,7 @@ impl Tox {
     pub fn set_status(&mut self, status: status::UserStatus) {
         unsafe { ffi::tox_self_set_status(self.core, status) }
     }
-    pub fn set_status_message<S: AsRef<[u8]>>(&mut self, message: &S) -> Result<(), error::InfoSetErr> {
+    pub fn set_status_message<S: AsRef<[u8]>>(&mut self, message: S) -> Result<(), error::InfoSetErr> {
         let message = message.as_ref();
         out!( bool
             err,
@@ -80,7 +82,7 @@ impl Tox {
         )
     }
 
-    pub fn request_friend<S: AsRef<[u8]>>(&mut self, address: Address, message: &S) -> Result<Friend, error::AddFriendErr> {
+    pub fn request_friend<S: AsRef<[u8]>>(&mut self, address: Address, message: S) -> Result<Friend, error::AddFriendErr> {
         let message = message.as_ref();
         out!( num
             err,

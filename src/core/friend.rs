@@ -1,12 +1,13 @@
 use chrono::NaiveDateTime;
+use super::chat::{ MessageType, MessageID };
 use super::{
     ffi, error, vars, status,
-    Address, PublicKey, Status
+    Address, PublicKey, Status, Chat
 };
 
 pub struct Friend {
     core: *mut ffi::Tox,
-    pub number: ::libc::uint32_t
+    pub number: u32
 }
 
 impl Friend {
@@ -129,5 +130,30 @@ impl Status for Friend {
                 &mut err
             )
         )
+    }
+}
+
+impl Chat for Friend {
+    fn send<S: AsRef<[u8]>>(&mut self, ty: MessageType, message: S) -> Result<MessageID, error::SendMessageErr> {
+        let message = message.as_ref();
+        out!( err
+            err,
+            ffi::tox_friend_send_message(
+                self.core,
+                self.number,
+                ty,
+                message.as_ptr(),
+                message.len(),
+                &mut err
+            )
+        ).map_err(|err| error::SendMessageErr::from(err))
+    }
+
+    fn say<S: AsRef<[u8]>>(&mut self, message: S) -> Result<MessageID, error::SendMessageErr> {
+        self.send(MessageType::NORMAL, message)
+    }
+
+    fn action<S: AsRef<[u8]>>(&mut self, message: S) -> Result<MessageID, error::SendMessageErr> {
+        self.send(MessageType::ACTION, message)
     }
 }
