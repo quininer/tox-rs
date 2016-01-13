@@ -2,9 +2,10 @@ use std::ffi::CString;
 use chrono::Duration;
 use super::{ ffi, Tox, error, vars, PublicKey };
 
+
 pub trait Network {
-    fn bootstrap<S: AsRef<str>>(&mut self, address: S, port: u16, public_key: PublicKey) -> Result<(), error::BootstrapErr>;
-    fn addtcprelay<S: AsRef<str>>(&mut self, address: S, port: u16, public_key: PublicKey) -> Result<(), error::BootstrapErr>;
+    fn bootstrap<S: AsRef<str>>(&mut self, ipaddress: S, port: u16, public_key: PublicKey) -> Result<(), error::BootstrapErr>;
+    fn addtcprelay<S: AsRef<str>>(&mut self, ipaddress: S, port: u16, public_key: PublicKey) -> Result<(), error::BootstrapErr>;
     fn interval(&self) -> Duration;
     fn iterate(&mut self);
     fn dhtid(&self) -> Vec<u8>;

@@ -7,6 +7,7 @@ pub mod chat;
 mod friend;
 mod network;
 mod address;
+mod custom;
 
 pub use core::options::ToxOptions;
 pub use core::status::Status;
@@ -14,6 +15,7 @@ pub use core::network::Network;
 pub use core::friend::Friend;
 pub use core::address::{ PublicKey, Address };
 pub use core::chat::Chat;
+pub use core::custom::Packet;
 
 
 #[derive(Clone, Debug)]

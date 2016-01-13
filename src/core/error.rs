@@ -11,7 +11,8 @@ pub use super::ffi::{
     TOX_ERR_SET_TYPING as TypingSetErr,
     TOX_ERR_GET_PORT as GetPortErr,
     TOX_ERR_BOOTSTRAP as BootstrapErr,
-    TOX_ERR_FRIEND_SEND_MESSAGE as SendMessageFriendErr
+    TOX_ERR_FRIEND_SEND_MESSAGE as SendMessageFriendErr,
+    TOX_ERR_FRIEND_CUSTOM_PACKET as CustomPacketErr
 };
 
 
@@ -27,6 +28,7 @@ impl From<FromHexError> for AddressParserErr {
         AddressParserErr::HexError(err)
     }
 }
+
 
 pub enum SendMessageErr {
     Friend(SendMessageFriendErr),

@@ -6,7 +6,7 @@ pub use super::ffi::{
 };
 
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub struct ToxOptions {
     pub opts: ffi::Tox_Options
 }

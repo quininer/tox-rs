@@ -26,14 +26,20 @@ pub struct Address {
     checksum: [u8; 2]
 }
 
-impl PublicKey {
-    pub fn new(v: &[u8]) -> PublicKey {
+impl From<Vec<u8>> for PublicKey {
+    fn from(v: Vec<u8>) -> PublicKey {
         PublicKey { raw: to_slice!(v, TOX_PUBLIC_KEY_SIZE) }
     }
 }
 
-impl Address {
-    pub fn new(v: &[u8]) -> Address {
+impl<'a> From<&'a [u8]> for PublicKey {
+    fn from(v: &[u8]) -> PublicKey {
+        PublicKey::from(v.to_vec())
+    }
+}
+
+impl From<Vec<u8>> for Address {
+    fn from(v: Vec<u8>) -> Address {
         let (pk, nnc) = v.split_at(TOX_PUBLIC_KEY_SIZE);
         let (nospam, checksum) = nnc.split_at(4);
         Address {
@@ -42,7 +48,15 @@ impl Address {
             checksum: to_slice!(checksum, 2)
         }
     }
+}
 
+impl<'a> From<&'a [u8]> for Address {
+    fn from(v: &[u8]) -> Address {
+        Address::from(v.to_vec())
+    }
+}
+
+impl Address {
     pub fn out(&self) -> Vec<u8> {
         vec![
             self.publickey.as_ref().to_vec(),
