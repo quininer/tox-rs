@@ -5,12 +5,16 @@ authors = ["quininer <quininer@live.com>"]
 build = "build.rs"
 
 [dependencies]
-libc = "0.2.*"
-chrono = "0.2.*"
-rustc-serialize = "0.3.*"
+libc = "0.2"
+chrono = "0.2"
+rustc-serialize = "0.3"
+
+[dependencies.mio]
+version = "*"
+git = "https://github.com/carllerche/mio.git"
 
 [build-dependencies.ffigen]
-version = "0.1.*"
+version = "0.1"
 git = "https://github.com/quininer/rust-ffigen.git"
 
 [dev-dependencies]

@@ -8,20 +8,23 @@ mod friend;
 mod network;
 mod address;
 mod custom;
+mod events;
 
-pub use core::options::ToxOptions;
-pub use core::status::Status;
-pub use core::network::Network;
-pub use core::friend::Friend;
-pub use core::address::{ PublicKey, Address };
-pub use core::chat::Chat;
-pub use core::custom::Packet;
+pub use self::options::ToxOptions;
+pub use self::status::Status;
+pub use self::network::Network;
+pub use self::friend::Friend;
+pub use self::address::{ PublicKey, Address };
+pub use self::chat::Chat;
+pub use self::custom::Packet;
 
 
 #[derive(Clone, Debug)]
 pub struct Tox {
     core: *mut ffi::Tox
 }
+
+unsafe impl Send for Tox {}
 
 impl Tox {
     pub fn new(opts: ToxOptions) -> Result<Tox, error::NewErr> {

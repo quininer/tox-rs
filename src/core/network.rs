@@ -1,5 +1,5 @@
 use std::ffi::CString;
-use chrono::Duration;
+use std::time::Duration;
 use super::{ ffi, Tox, error, vars, PublicKey };
 
 
@@ -43,7 +43,7 @@ impl Network for Tox {
     }
 
     fn interval(&self) -> Duration {
-        Duration::milliseconds(unsafe { ffi::tox_iteration_interval(self.core) } as i64)
+        Duration::from_millis(unsafe { ffi::tox_iteration_interval(self.core) } as u64)
     }
 
     fn iterate(&mut self) {
