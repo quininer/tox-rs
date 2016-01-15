@@ -1,47 +1,45 @@
-use std::io;
-use std::thread;
+use std::time::Duration;
 use std::mem::transmute;
+use std::sync::mpsc::{ channel, Sender, Receiver };
 use libc::c_void;
-use mio::{
-    EventLoop,
-    Handler,
-    Sender
+use super::{
+    ffi, vars,
+    Tox, Friend,
+    Network
 };
-use super::{ ffi, vars, Tox, Network };
 
 
-pub enum Events {
-    SelfConnection(vars::Connection)
+#[derive(Clone, Debug)]
+pub enum Event {
+    SelfConnection(vars::Connection),
+    FriendName(Friend, Vec<u8>)
 }
 
-pub trait Listener<H: Handler>: Network {
-    fn listen(&mut self) -> io::Result<EventLoop<H>>;
-}
-
-impl<H> Listener<H> for Tox where H: Handler {
-    fn listen(&mut self) -> io::Result<EventLoop<H>> {
-        let event_loop = try!(EventLoop::new());
-        let mut sender = Box::new(event_loop.channel());
-
-        unsafe {
-            let void: *mut c_void = transmute(&mut sender);
-
-            ffi::tox_callback_self_connection_status(self.core, on_self_connection_status, void);
-        }
-
-        let mut tox = self.clone();
-        thread::spawn(move || {
-            tox.iterate();
-            thread::sleep(tox.interval());
-        });
-
-        Ok(event_loop)
+pub trait Listen: Network {
+    fn iterate(&mut self) -> Receiver<Event>;
+    fn interval(&mut self) -> Duration {
+        self._iterate();
+        self._interval()
     }
 }
 
-extern "C" fn on_self_connection_status(_: *mut ffi::Tox, connection_status: vars::Connection, void: *mut c_void) {
+impl Listen for Tox {
+    fn iterate(&mut self) -> Receiver<Event> {
+        let (sender, receiver) = channel::<Event>();
+
+        unsafe {
+            let tx: *mut c_void = transmute(Box::new(sender));
+
+            ffi::tox_callback_self_connection_status(self.core, on_self_connection_status, tx);
+        };
+
+        receiver
+    }
+}
+
+extern "C" fn on_self_connection_status(_: *mut ffi::Tox, connection_status: vars::Connection, tx: *mut c_void) {
     unsafe {
-        let sender: &mut Sender<Events> = transmute(void);
-        sender.send(Events::SelfConnection(connection_status)).ok();
+        let sender: Box<Sender<Event>> = transmute(tx);
+        sender.send(Event::SelfConnection(connection_status)).ok();
     }
 }

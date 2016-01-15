@@ -8,7 +8,7 @@ mod friend;
 mod network;
 mod address;
 mod custom;
-mod events;
+pub mod events;
 
 pub use self::options::ToxOptions;
 pub use self::status::Status;
