@@ -26,7 +26,7 @@ pub struct ToxPassKey {
 /// use tox::encryptsave::ToxPassKey;
 ///
 /// let passphrase = b"tox-rs";
-/// let data = b"Tox on Rust, use mio.";
+/// let data = b"Tox on Rust, use coio.";
 ///
 /// let ciphertext = ToxPassKey::new(passphrase).unwrap()
 ///     .encrypt(data).unwrap();

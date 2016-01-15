@@ -1,6 +1,6 @@
 use std::time::Duration;
 use std::mem::transmute;
-use std::sync::mpsc::{ channel, Sender, Receiver };
+use coio::sync::mpsc::{ channel, Sender, Receiver };
 use libc::c_void;
 use super::{
     ffi, vars,

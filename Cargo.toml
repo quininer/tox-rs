@@ -8,6 +8,7 @@ build = "build.rs"
 libc = "0.2"
 chrono = "0.2"
 rustc-serialize = "0.3"
+coio = { git = "https://github.com/zonyitoo/coio-rs.git" }
 
 [build-dependencies.ffigen]
 version = "0.1"
