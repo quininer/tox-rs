@@ -38,7 +38,7 @@ pub struct ToxPassKey {
 impl ToxPassKey {
     /// Generate ToxPassKey, using a random salt.
     pub fn new(passphrase: &[u8]) -> Result<ToxPassKey, error::KeyDerivationErr> {
-        let out = try!(out!( out
+        out!( out
             out, err,
             ffi::tox_derive_key_from_pass(
                 passphrase.as_ptr(),
@@ -46,14 +46,12 @@ impl ToxPassKey {
                 &mut out,
                 &mut err
             )
-        ));
-
-        Ok(ToxPassKey { passkey: out })
+        ).map(|r| ToxPassKey { passkey: r })
     }
 
     /// Generate Tox PassKey, read salt from the data.
     pub fn from(passphrase: &[u8], data: &[u8]) -> Result<ToxPassKey, error::KeyDerivationErr> {
-        ToxPassKey::with(passphrase, unsafe {
+        ToxPassKey::with(passphrase, &unsafe {
             let mut salt = vec_with!(PASS_KEY_LENGTH);
             ffi::tox_get_salt(data.as_ptr(), salt.as_mut_ptr());
             salt
@@ -61,8 +59,8 @@ impl ToxPassKey {
     }
 
     /// Generate ToxPassKey, using the specified salt.
-    pub fn with(passphrase: &[u8], salt: Vec<u8>) -> Result<ToxPassKey, error::KeyDerivationErr> {
-        let out = try!(out!( out
+    pub fn with(passphrase: &[u8], salt: &[u8]) -> Result<ToxPassKey, error::KeyDerivationErr> {
+        out!( out
             out, err,
             ffi::tox_derive_key_with_salt(
                 passphrase.as_ptr(),
@@ -71,9 +69,7 @@ impl ToxPassKey {
                 &mut out,
                 &mut err
             )
-        ));
-
-        Ok(ToxPassKey { passkey: out })
+        ).map(|r| ToxPassKey { passkey: r })
     }
 
     /// encryption
