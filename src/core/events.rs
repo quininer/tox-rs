@@ -1,6 +1,6 @@
-use std::time::Duration;
 use std::mem::transmute;
-use coio::sync::mpsc::{ channel, Sender, Receiver };
+use std::time::Duration;
+use std::sync::mpsc::{ channel, Sender, Receiver };
 use libc::c_void;
 use super::{
     ffi, vars,
@@ -16,14 +16,23 @@ pub enum Event {
 }
 
 pub trait Listen: Network {
-    fn iterate(&mut self) -> Receiver<Event>;
+    fn _interval(&self) -> Duration;
+    fn _iterate(&mut self);
     fn interval(&mut self) -> Duration {
         self._iterate();
         self._interval()
     }
+    fn iterate(&mut self) -> Receiver<Event>;
 }
 
 impl Listen for Tox {
+    fn _interval(&self) -> Duration {
+        Duration::from_millis(unsafe { ffi::tox_iteration_interval(self.core) } as u64)
+    }
+    fn _iterate(&mut self) {
+        unsafe { ffi::tox_iterate(self.core) }
+    }
+
     fn iterate(&mut self) -> Receiver<Event> {
         let (sender, receiver) = channel::<Event>();
 

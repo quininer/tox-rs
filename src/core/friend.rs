@@ -9,7 +9,7 @@ pub struct Friend {
 }
 
 impl Friend {
-    pub fn new(core: *mut ffi::Tox, number: ::libc::uint32_t) -> Friend {
+    pub fn new(core: *mut ffi::Tox, number: u32) -> Friend {
         Friend { core: core, number: number }
     }
 
