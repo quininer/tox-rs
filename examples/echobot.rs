@@ -3,8 +3,8 @@ extern crate rustc_serialize;
 
 use std::thread::sleep;
 use rustc_serialize::hex::ToHex;
-use tox::core::{ ToxOptions, Network, Status, Chat };
-use tox::core::events::{ Listen, Event };
+use tox::core::{ ToxOptions, Event, Network, Status, Chat, Listen };
+
 
 fn main() {
     let mut im = ToxOptions::new().generate().unwrap();

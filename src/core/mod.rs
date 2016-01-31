@@ -8,7 +8,7 @@ mod friend;
 mod network;
 mod address;
 mod custom;
-pub mod events;
+mod events;
 
 pub use self::options::ToxOptions;
 pub use self::status::Status;
@@ -17,14 +17,13 @@ pub use self::friend::Friend;
 pub use self::address::{ PublicKey, Address };
 pub use self::chat::Chat;
 pub use self::custom::Packet;
+pub use self::events::{ Event, Listen };
 
 
 #[derive(Clone, Debug)]
 pub struct Tox {
     core: *mut ffi::Tox
 }
-
-unsafe impl Send for Tox {}
 
 impl Tox {
     pub fn new(opts: ToxOptions) -> Result<Tox, error::NewErr> {

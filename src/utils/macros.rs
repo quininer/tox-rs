@@ -1,3 +1,4 @@
+/// C Function out wrapper
 macro_rules! out {
     ( out $out:ident <- $rexpr:expr, $err:ident, $exp:expr ) => {
         unsafe {
@@ -58,6 +59,7 @@ macro_rules! out {
     }
 }
 
+/// fixed size Vec
 macro_rules! vec_with {
     ( $len:expr ) => {{
         let len = $len;
@@ -65,4 +67,23 @@ macro_rules! vec_with {
         out.set_len(len);
         out
     }}
+}
+
+/// Event Callback
+macro_rules! callback {
+    ( ( $core:expr, $tx:expr ), $( $event:ident ),* ) => {{
+        use super::ffi::*;
+        $(
+            concat_idents!(tox_callback_, $event)($core, concat_idents!(on_, $event), $tx);
+        )*
+    }}
+}
+
+/// FFI Struct rename
+macro_rules! use_as {
+    ( $( $old:ident -> $new:ident ),* ) => {
+        $(
+            pub type $new = super::ffi::$old;
+        )*
+    }
 }

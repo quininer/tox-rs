@@ -69,16 +69,7 @@ impl Listen for Tox {
         unsafe {
             let tx: *mut c_void = transmute(Box::new(sender));
 
-            macro_rules! callback {
-                ( $( $event:ident ),* ) => {{
-                    use super::ffi::*;
-                    $(
-                        concat_idents!(tox_callback_, $event)(self.core, concat_idents!(on_, $event), tx);
-                    )*
-                }}
-            }
-
-            callback!(
+            callback!( ( self.core, tx ),
                 self_connection_status,
                 friend_request,
                 friend_name,
