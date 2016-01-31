@@ -1,8 +1,3 @@
-pub use super::ffi::{
-    TOX_CONNECTION as Connection
-};
-
-
 pub const TOX_PUBLIC_KEY_SIZE: usize = 32;
 pub const TOX_SECRET_KEY_SIZE: usize = 32;
 // TOX_PUBLIC_KEY_SIZE + size_of::<::libc::uint32_t>() + size_of::<::libc::uint16_t>()

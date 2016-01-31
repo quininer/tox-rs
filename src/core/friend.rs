@@ -13,7 +13,7 @@ impl Friend {
         Friend { core: core, number: number }
     }
 
-    pub fn delete(&mut self) -> Result<(), error::DelFriendErr> {
+    pub fn delete(&self) -> Result<(), error::DelFriendErr> {
         out!( bool
             err,
             ffi::tox_friend_delete(

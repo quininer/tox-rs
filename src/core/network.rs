@@ -3,15 +3,15 @@ use super::{ ffi, Tox, error, vars, PublicKey };
 
 
 pub trait Network {
-    fn bootstrap<S: AsRef<str>>(&mut self, ipaddress: S, port: u16, public_key: PublicKey) -> Result<(), error::BootstrapErr>;
-    fn addtcprelay<S: AsRef<str>>(&mut self, ipaddress: S, port: u16, public_key: PublicKey) -> Result<(), error::BootstrapErr>;
+    fn bootstrap<S: AsRef<str>>(&self, ipaddress: S, port: u16, public_key: PublicKey) -> Result<(), error::BootstrapErr>;
+    fn addtcprelay<S: AsRef<str>>(&self, ipaddress: S, port: u16, public_key: PublicKey) -> Result<(), error::BootstrapErr>;
     fn dhtid(&self) -> Vec<u8>;
     fn udpport(&self) -> Result<u16, error::GetPortErr>;
     fn tcpport(&self) -> Result<u16, error::GetPortErr>;
 }
 
 impl Network for Tox {
-    fn bootstrap<S: AsRef<str>>(&mut self, ipaddress: S, port: u16, public_key: PublicKey) -> Result<(), error::BootstrapErr> {
+    fn bootstrap<S: AsRef<str>>(&self, ipaddress: S, port: u16, public_key: PublicKey) -> Result<(), error::BootstrapErr> {
         let ipaddress = ipaddress.as_ref();
         out!( bool
             err,
@@ -25,7 +25,7 @@ impl Network for Tox {
         )
     }
 
-    fn addtcprelay<S: AsRef<str>>(&mut self, ipaddress: S, port: u16, public_key: PublicKey) -> Result<(), error::BootstrapErr> {
+    fn addtcprelay<S: AsRef<str>>(&self, ipaddress: S, port: u16, public_key: PublicKey) -> Result<(), error::BootstrapErr> {
         let ipaddress = ipaddress.as_ref();
         out!( bool
             err,

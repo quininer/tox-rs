@@ -45,7 +45,7 @@ impl Tox {
         )
     }
 
-    pub fn set_name<S: AsRef<[u8]>>(&mut self, name: S) -> Result<(), error::InfoSetErr> {
+    pub fn set_name<S: AsRef<[u8]>>(&self, name: S) -> Result<(), error::InfoSetErr> {
         let name = name.as_ref();
         out!( bool
             err,
@@ -57,13 +57,13 @@ impl Tox {
             )
         )
     }
-    pub fn set_nospam(&mut self, nospam: u32) {
+    pub fn set_nospam(&self, nospam: u32) {
         unsafe { ffi::tox_self_set_nospam(self.core, nospam) }
     }
-    pub fn set_status(&mut self, status: status::UserStatus) {
+    pub fn set_status(&self, status: status::UserStatus) {
         unsafe { ffi::tox_self_set_status(self.core, status) }
     }
-    pub fn set_status_message<S: AsRef<[u8]>>(&mut self, message: S) -> Result<(), error::InfoSetErr> {
+    pub fn set_status_message<S: AsRef<[u8]>>(&self, message: S) -> Result<(), error::InfoSetErr> {
         let message = message.as_ref();
         out!( bool
             err,
@@ -75,7 +75,7 @@ impl Tox {
             )
         )
     }
-    pub fn set_typing(&mut self, friend: Friend, typing: bool) -> Result<(), error::TypingSetErr> {
+    pub fn set_typing(&self, friend: Friend, typing: bool) -> Result<(), error::TypingSetErr> {
         out!( bool
             err,
             ffi::tox_self_set_typing(
@@ -87,7 +87,7 @@ impl Tox {
         )
     }
 
-    pub fn request_friend<S: AsRef<[u8]>>(&mut self, address: Address, message: S) -> Result<Friend, error::AddFriendErr> {
+    pub fn request_friend<S: AsRef<[u8]>>(&self, address: Address, message: S) -> Result<Friend, error::AddFriendErr> {
         let message = message.as_ref();
         out!( num
             err,
@@ -100,7 +100,7 @@ impl Tox {
             )
         ).map(|r| Friend::new(self.core, r))
     }
-    pub fn add_friend(&mut self, public_key: PublicKey) -> Result<Friend, error::AddFriendErr> {
+    pub fn add_friend(&self, public_key: PublicKey) -> Result<Friend, error::AddFriendErr> {
         out!( num
             err,
             ffi::tox_friend_add_norequest(

@@ -3,12 +3,12 @@ use super::Friend;
 
 
 pub trait Packet {
-    fn send_lossy<S: AsRef<[u8]>>(&mut self, data: S) -> Result<(), error::CustomPacketErr>;
-    fn send_lossless<S: AsRef<[u8]>>(&mut self, data: S) -> Result<(), error::CustomPacketErr>;
+    fn send_lossy<S: AsRef<[u8]>>(&self, data: S) -> Result<(), error::CustomPacketErr>;
+    fn send_lossless<S: AsRef<[u8]>>(&self, data: S) -> Result<(), error::CustomPacketErr>;
 }
 
 impl Packet for Friend {
-    fn send_lossy<S: AsRef<[u8]>>(&mut self, data: S) -> Result<(), error::CustomPacketErr> {
+    fn send_lossy<S: AsRef<[u8]>>(&self, data: S) -> Result<(), error::CustomPacketErr> {
         let data = data.as_ref();
         out!( bool
             err,
@@ -22,7 +22,7 @@ impl Packet for Friend {
         )
     }
 
-    fn send_lossless<S: AsRef<[u8]>>(&mut self, data: S) -> Result<(), error::CustomPacketErr> {
+    fn send_lossless<S: AsRef<[u8]>>(&self, data: S) -> Result<(), error::CustomPacketErr> {
         let data = data.as_ref();
         out!( bool
             err,
