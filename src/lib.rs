@@ -1,3 +1,5 @@
+#![feature(concat_idents)]
+
 extern crate libc;
 extern crate chrono;
 extern crate rustc_serialize;

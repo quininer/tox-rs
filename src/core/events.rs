@@ -2,10 +2,11 @@ use std::slice;
 use std::mem::transmute;
 use std::time::Duration;
 use std::sync::mpsc::{ channel, Sender, Receiver };
-use libc::c_void;
+use libc::*;
+use super::chat::{ MessageID, MessageType };
 use super::{
-    ffi, status,
-    Tox, Friend,
+    ffi, status, vars,
+    Tox, Friend, PublicKey,
     Network
 };
 
@@ -13,8 +14,35 @@ use super::{
 #[derive(Clone, Debug)]
 pub enum Event {
     SelfConnection(status::Connection),
+    RequestFriend(PublicKey, Vec<u8>),
+
+    // Friend status
+    FriendName(Friend, Vec<u8>),
+    FriendStatusMessage(Friend, Vec<u8>),
     FriendStatus(Friend, status::UserStatus),
-    FriendName(Friend, Vec<u8>)
+    FriendConnection(Friend, status::Connection),
+
+    // Friend basic Message
+    FriendTyping(Friend, bool),
+    FriendReadReceipt(Friend, MessageID),
+    FriendMessage(Friend, MessageType, Vec<u8>),
+
+    // Friend Custom Packet
+    FriendLossyPacket(Friend, Vec<u8>),
+    FriendLosslessPacket(Friend, Vec<u8>),
+
+    // TODO
+    // Firend File
+    // FriendRecv(Friend, File),
+    // FriendRecvChunk(Friend, FileChunk),
+
+    // TODO
+    // Old API
+    // Group
+    // GroupInvite(Friend, Group),
+    // GroupMessage(Group, Peer, Vec<u8>),
+    // GroupTitle(Group, Peer, Vec<u8>),
+    // GroupPeerChange(Group, Peer, PeerAction)
 }
 
 pub trait Listen: Network {
@@ -41,10 +69,28 @@ impl Listen for Tox {
         unsafe {
             let tx: *mut c_void = transmute(Box::new(sender));
 
-            // macro_rule! callback {}
-            ffi::tox_callback_self_connection_status(self.core, on_self_connection_status, tx);
-            ffi::tox_callback_friend_status(self.core, on_friend_status, tx);
-            ffi::tox_callback_friend_name(self.core, on_friend_name, tx);
+            macro_rules! callback {
+                ( $( $event:ident ),* ) => {{
+                    use super::ffi::*;
+                    $(
+                        concat_idents!(tox_callback_, $event)(self.core, concat_idents!(on_, $event), tx);
+                    )*
+                }}
+            }
+
+            callback!(
+                self_connection_status,
+                friend_request,
+                friend_name,
+                friend_status_message,
+                friend_status,
+                friend_connection_status,
+                friend_typing,
+                friend_read_receipt,
+                friend_message,
+                friend_lossy_packet,
+                friend_lossless_packet
+            );
         };
 
         receiver
@@ -57,14 +103,62 @@ extern "C" fn on_self_connection_status(
     tx: *mut c_void
 ) {
     unsafe {
-        println!("status");
         let sender: &Sender<Event> = transmute(tx);
         sender.send(Event::SelfConnection(connection_status)).ok();
     }
 }
+
+extern "C" fn on_friend_request(
+    _: *mut ffi::Tox,
+    public_key: *const uint8_t,
+    message: *const uint8_t,
+    length: size_t,
+    tx: *mut c_void
+) {
+    unsafe {
+        let sender: &Sender<Event> = transmute(tx);
+        sender.send(Event::RequestFriend(
+            PublicKey::from(slice::from_raw_parts(public_key, vars::TOX_PUBLIC_KEY_SIZE).to_vec()),
+            slice::from_raw_parts(message, length).to_vec()
+        )).ok();
+    }
+}
+
+extern "C" fn on_friend_name(
+    core: *mut ffi::Tox,
+    friend_number: uint32_t,
+    name: *const uint8_t,
+    length: size_t,
+    tx: *mut c_void
+) {
+    unsafe {
+        let sender: &Sender<Event> = transmute(tx);
+        sender.send(Event::FriendName(
+            Friend::new(core, friend_number),
+            slice::from_raw_parts(name, length).to_vec()
+        )).ok();
+    }
+}
+
+extern "C" fn on_friend_status_message(
+    core: *mut ffi::Tox,
+    friend_number: uint32_t,
+    message: *const uint8_t,
+    length: size_t,
+    tx: *mut c_void
+) {
+    unsafe {
+        let sender: &Sender<Event> = transmute(tx);
+        sender.send(Event::FriendStatusMessage(
+            Friend::new(core, friend_number),
+            slice::from_raw_parts(message, length).to_vec()
+        )).ok();
+    }
+}
+
 extern "C" fn on_friend_status(
     core: *mut ffi::Tox,
-    friend_number: ::libc::uint32_t,
+    friend_number: uint32_t,
     status: status::UserStatus,
     tx: *mut c_void
 ) {
@@ -77,18 +171,97 @@ extern "C" fn on_friend_status(
     }
 }
 
-extern "C" fn on_friend_name(
+extern "C" fn on_friend_connection_status(
     core: *mut ffi::Tox,
-    friend_number: ::libc::uint32_t,
-    name: *const ::libc::uint8_t,
-    length: ::libc::size_t,
+    friend_number: uint32_t,
+    connection_status: status::Connection,
     tx: *mut c_void
 ) {
     unsafe {
         let sender: &Sender<Event> = transmute(tx);
-        sender.send(Event::FriendName(
+        sender.send(Event::FriendConnection(
             Friend::new(core, friend_number),
-            slice::from_raw_parts(name, length).to_vec()
+            connection_status
+        )).ok();
+    }
+}
+
+extern "C" fn on_friend_typing(
+    core: *mut ffi::Tox,
+    friend_number: uint32_t,
+    typing: bool,
+    tx: *mut c_void
+) {
+    unsafe {
+        let sender: &Sender<Event> = transmute(tx);
+        sender.send(Event::FriendTyping(
+            Friend::new(core, friend_number),
+            typing
+        )).ok();
+    }
+}
+
+extern "C" fn on_friend_read_receipt(
+    core: *mut ffi::Tox,
+    friend_number: uint32_t,
+    message_id: uint32_t,
+    tx: *mut c_void
+) {
+    unsafe {
+        let sender: &Sender<Event> = transmute(tx);
+        sender.send(Event::FriendReadReceipt(
+            Friend::new(core, friend_number),
+            message_id
+        )).ok();
+    }
+}
+
+extern "C" fn on_friend_message(
+    core: *mut ffi::Tox,
+    friend_number: uint32_t,
+    message_type: MessageType,
+    message: *const uint8_t,
+    length: size_t,
+    tx: *mut c_void
+) {
+    unsafe {
+        let sender: &Sender<Event> = transmute(tx);
+        sender.send(Event::FriendMessage(
+            Friend::new(core, friend_number),
+            message_type,
+            slice::from_raw_parts(message, length).to_vec()
+        )).ok();
+    }
+}
+
+extern "C" fn on_friend_lossy_packet(
+    core: *mut ffi::Tox,
+    friend_number: uint32_t,
+    data: *const uint8_t,
+    length: size_t,
+    tx: *mut c_void
+) {
+    unsafe {
+        let sender: &Sender<Event> = transmute(tx);
+        sender.send(Event::FriendLossyPacket(
+            Friend::new(core, friend_number),
+            slice::from_raw_parts(data, length).to_vec()
+        )).ok();
+    }
+}
+
+extern "C" fn on_friend_lossless_packet(
+    core: *mut ffi::Tox,
+    friend_number: uint32_t,
+    data: *const uint8_t,
+    length: size_t,
+    tx: *mut c_void
+) {
+    unsafe {
+        let sender: &Sender<Event> = transmute(tx);
+        sender.send(Event::FriendLosslessPacket(
+            Friend::new(core, friend_number),
+            slice::from_raw_parts(data, length).to_vec()
         )).ok();
     }
 }

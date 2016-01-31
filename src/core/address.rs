@@ -66,7 +66,7 @@ impl Address {
     }
 
     pub fn check(&self) -> bool {
-        let mut check = [0u8; 2];
+        let mut check = [0; 2];
         for (i, &k) in self.publickey.as_ref().iter().enumerate() {
             check[i % 2] ^= k;
         }
