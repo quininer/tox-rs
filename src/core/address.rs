@@ -15,11 +15,13 @@ macro_rules! to_slice {
     }};
 }
 
+/// Public Key.
 #[derive(PartialEq, Clone, Debug)]
 pub struct PublicKey {
     inner: [u8; TOX_PUBLIC_KEY_SIZE]
 }
 
+/// Tox Address.
 #[derive(PartialEq, Clone, Debug)]
 pub struct Address {
     publickey: PublicKey,

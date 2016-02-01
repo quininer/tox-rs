@@ -7,6 +7,7 @@ use super::chat::{ MessageType, MessageID };
 use super::status::{ Connection, UserStatus };
 
 
+/// GropuChat Peer.
 #[derive(Clone, Debug)]
 pub struct Peer {
     group: Group,

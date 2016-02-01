@@ -2,6 +2,7 @@ use chrono::NaiveDateTime;
 use super::{ ffi, Tox, Address, PublicKey, error };
 
 
+/// Friend.
 #[derive(Clone, Debug)]
 pub struct Friend {
     pub core: *mut ffi::Tox,
@@ -63,6 +64,8 @@ impl Friend {
     }
 }
 
+
+/// Manage Friends.
 pub trait FriendManage {
     /// Request Friend by Address.
     fn request_friend<S: AsRef<[u8]>>(&self, address: Address, message: S) -> Result<Friend, error::AddFriendErr>;

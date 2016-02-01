@@ -8,6 +8,7 @@ pub use super::ffi::{
 };
 
 
+/// File.
 #[derive(Clone, Debug)]
 pub struct File<T: FileManage> {
     pub target: T,
@@ -21,6 +22,7 @@ impl<T: FileManage> File<T> {
 }
 
 
+/// File Operate.
 pub trait FileOperate {
     /// File Control.
     fn control(&self, control: FileControl) -> Result<(), error::FileControlErr>;
@@ -90,6 +92,7 @@ impl FileOperate for File<Friend> {
 }
 
 
+/// Manage File.
 pub trait FileManage {
     /// Start Transmission.
     fn transmission<F: AsRef<[u8]>>(&self, kind: FileKind, filename: F, filesize: u64, fileid: Option<&[u8]>) -> Result<File<Friend>, error::FileSendErr>;

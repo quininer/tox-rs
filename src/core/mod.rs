@@ -15,7 +15,7 @@ mod events;
 pub mod group;
 
 #[cfg(feature = "groupchat")]
-pub mod peer;
+mod peer;
 
 pub use self::options::ToxOptions;
 pub use self::status::Status;
@@ -28,11 +28,13 @@ pub use self::events::{ Event, Listen };
 pub use self::file::File;
 
 #[cfg(feature = "groupchat")]
-pub use self::group::{ Group, GroupCreate };
+pub use self::group::Group;
 
 #[cfg(feature = "groupchat")]
 pub use self::peer::Peer;
 
+
+/// Tox.
 #[derive(Clone, Debug)]
 pub struct Tox {
     core: *mut ffi::Tox

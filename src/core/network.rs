@@ -2,6 +2,7 @@ use std::ffi::CString;
 use super::{ ffi, Tox, error, vars, PublicKey };
 
 
+/// Network.
 pub trait Network {
     fn bootstrap<S: AsRef<str>>(&self, ipaddress: S, port: u16, public_key: PublicKey) -> Result<(), error::BootstrapErr>;
     fn addtcprelay<S: AsRef<str>>(&self, ipaddress: S, port: u16, public_key: PublicKey) -> Result<(), error::BootstrapErr>;

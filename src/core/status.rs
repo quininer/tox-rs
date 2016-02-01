@@ -5,6 +5,7 @@ pub use super::ffi::{
 };
 
 
+/// Get Status.
 pub trait Status {
     /// Get Name.
     fn name(&self) -> Result<Vec<u8>, error::GetStatusErr>;

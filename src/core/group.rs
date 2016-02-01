@@ -18,6 +18,7 @@ pub enum GroupType {
 }
 
 
+/// GroupChat (TEXT).
 #[derive(Clone, Debug)]
 pub struct Group {
     pub core: *mut ffi::Tox,
@@ -43,6 +44,8 @@ impl Group {
     }
 }
 
+
+/// Create GroupChat.
 pub trait GroupCreate {
     /// Create GroupChat.
     fn create_group(&self) -> Group;
@@ -103,6 +106,7 @@ impl Chat for Group {
 }
 
 
+/// Manage Groupchat.
 pub trait GroupManage {
     /// Get Group Title.
     fn title(&self) -> Vec<u8>;

@@ -75,6 +75,8 @@ pub enum Event {
     GroupPeerChange(Group, Peer, PeerChange)
 }
 
+
+/// Listen Events.
 pub trait Listen: Network {
     fn _interval(&self) -> Duration;
     fn _iterate(&mut self);
