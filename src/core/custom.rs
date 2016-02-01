@@ -4,9 +4,9 @@ use super::Friend;
 
 /// Custom Packet.
 pub trait Packet {
-    /// Volatile Packet.
+    /// Volatile.
     fn send_lossy<S: AsRef<[u8]>>(&self, data: S) -> Result<(), error::CustomPacketErr>;
-    /// Non-volatile Packet.
+    /// Non-volatile.
     fn send_lossless<S: AsRef<[u8]>>(&self, data: S) -> Result<(), error::CustomPacketErr>;
 }
 

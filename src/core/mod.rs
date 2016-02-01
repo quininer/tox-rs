@@ -39,7 +39,13 @@ pub struct Tox {
 impl Tox {
     /// from ToxOptions create Tox.
     pub fn new(opts: ToxOptions) -> Result<Tox, error::NewErr> {
-        Ok(Tox { core: try!(out!(err err, ffi::tox_new(&opts.opts, &mut err))) })
+        out!(err err, ffi::tox_new(&opts.opts, &mut err))
+            .map(|o| Tox::from(o))
+    }
+
+    /// from raw ptr create Tox.
+    pub fn from(core: *mut ffi::Tox) -> Tox {
+        Tox { core: core }
     }
 
     /// Get Tox Profile data.

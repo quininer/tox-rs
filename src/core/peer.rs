@@ -1,9 +1,11 @@
 use super::{
     ffi, error, vars,
-    Group, PublicKey,
-    Status
+    Tox, Group, PublicKey,
+    Status, Chat, FriendManage
 };
+use super::chat::{ MessageType, MessageID };
 use super::status::{ Connection, UserStatus };
+
 
 #[derive(Clone, Debug)]
 pub struct Peer {
@@ -34,7 +36,7 @@ impl Status for Peer {
         ) };
         let mut names = unsafe { vec_with!(len as usize) };
         let mut lengths = unsafe { vec_with!(len as usize) };
-        if unsafe { ffi::tox_group_get_names(
+        if self.number >= len || unsafe { ffi::tox_group_get_names(
             self.group.core,
             self.group.number,
             names.as_mut_ptr(),
@@ -73,18 +75,35 @@ impl Status for Peer {
         }
     }
 
-    /// unimplemented, TODO new groupchat.
+    /// unimplemented, TODO New GroupChat.
     fn status(&self) -> Result<UserStatus, error::GetStatusErr> {
         unimplemented!()
     }
 
-    /// unimplemented, TODO new groupchat.
+    /// unimplemented, TODO New GroupChat.
     fn status_message(&self) -> Result<Vec<u8>, error::GetStatusErr> {
         unimplemented!()
     }
 
-    /// unimplemented, TODO new groupchat.
+    /// unimplemented, TODO New GroupChat.
     fn connection_status(&self) -> Result<Connection, error::GetStatusErr> {
         unimplemented!()
+    }
+}
+
+
+/// Fallback Friend Message.
+impl Chat for Peer {
+    fn send<S: AsRef<[u8]>>(&self, ty: MessageType, message: S) -> Result<MessageID, error::SendMessageErr> {
+        try!(Tox::from(self.group.core).get_friend(
+            try!(self.publickey().map_err(|_| error::SendMessageErr::Group))
+        ).map_err(|_| error::SendMessageErr::Group))
+            .send(ty, message)
+    }
+    fn say<S: AsRef<[u8]>>(&self, message: S) -> Result<MessageID, error::SendMessageErr> {
+        self.send(MessageType::NORMAL, message)
+    }
+    fn action<S: AsRef<[u8]>>(&self, message: S) -> Result<MessageID, error::SendMessageErr> {
+        self.send(MessageType::ACTION, message)
     }
 }

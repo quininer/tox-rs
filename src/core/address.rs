@@ -7,7 +7,7 @@ use super::error;
 
 macro_rules! to_slice {
     ( $vec:expr, $len:expr ) => {{
-        let mut out = [0u8; $len];
+        let mut out = [0; $len];
         for (x, &y) in $vec.iter().enumerate() {
             out[x] = y;
         }
@@ -41,8 +41,8 @@ impl<'a> From<&'a [u8]> for PublicKey {
 
 impl From<Vec<u8>> for Address {
     fn from(v: Vec<u8>) -> Address {
-        let (pk, nnc) = v.split_at(TOX_PUBLIC_KEY_SIZE);
-        let (nospam, checksum) = nnc.split_at(4);
+        let (pk, nc) = v.split_at(TOX_PUBLIC_KEY_SIZE);
+        let (nospam, checksum) = nc.split_at(4);
         Address {
             publickey: PublicKey { inner: to_slice!(pk, TOX_PUBLIC_KEY_SIZE) },
             nospam: to_slice!(nospam, 4),
@@ -60,7 +60,7 @@ impl<'a> From<&'a [u8]> for Address {
 impl Address {
     /// Output Address to `Vec<u8>`.
     pub fn out(&self) -> Vec<u8> {
-        vec![
+        [
             self.publickey.as_ref().to_vec(),
             self.nospam.to_vec(),
             self.checksum.to_vec()
@@ -131,8 +131,8 @@ impl FromStr for Address {
     type Err = error::AddressParserErr;
     fn from_str(s: &str) -> Result<Address, error::AddressParserErr> {
         if s.len() == TOX_ADDRESS_SIZE * 2 {
-            let (pk, nnc) = s.split_at(TOX_PUBLIC_KEY_SIZE * 2);
-            let (nospam, checksum) = nnc.split_at(4 * 2);
+            let (pk, nc) = s.split_at(TOX_PUBLIC_KEY_SIZE * 2);
+            let (nospam, checksum) = nc.split_at(4 * 2);
             let address = Address {
                 publickey: try!(pk.parse()),
                 nospam: to_slice!(try!(nospam.from_hex()), 4),

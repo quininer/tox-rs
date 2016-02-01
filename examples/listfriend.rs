@@ -1,11 +1,9 @@
 extern crate tox;
-extern crate rustc_serialize;
 
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 use std::env::args;
-use rustc_serialize::hex::ToHex;
 use tox::core::{ ToxOptions, Status, FriendManage };
 
 
@@ -29,7 +27,7 @@ ToxID: {}
 "#,
         String::from_utf8_lossy(&im.name().unwrap()),
         String::from_utf8_lossy(&im.status_message().unwrap()),
-        im.address().unwrap().out().to_hex()
+        im.address()
     );
 
     println!("FRIEND");
@@ -43,7 +41,7 @@ ToxPK: {}
             String::from_utf8_lossy(&f.name().unwrap()),
             String::from_utf8_lossy(&f.status_message().unwrap()),
             f.last().unwrap(),
-            f.publickey().unwrap().as_ref().to_hex()
+            f.publickey().unwrap()
         );
     }
 }

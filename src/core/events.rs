@@ -4,10 +4,16 @@ use std::time::Duration;
 use std::sync::mpsc::{ channel, Sender, Receiver };
 use libc::*;
 use super::chat::{ MessageID, MessageType };
-use super::group::{ GroupType, PeerChange };
+
+#[cfg(feature = "groupchat")]
+use super::group::{ GroupType, PeerChange, Group };
+
+#[cfg(feature = "groupchat")]
+use super::peer::Peer;
+
 use super::{
     ffi, status, vars,
-    Tox, Group, Peer, Friend, PublicKey,
+    Tox, Friend, PublicKey,
     Network
 };
 
@@ -48,14 +54,17 @@ pub enum Event {
     // FriendRecv(Friend, File),
     // FriendRecvChunk(Friend, FileChunk),
 
-    // Old API
-    // Group
+    // Group (Old API)
+    #[cfg(feature = "groupchat")]
     /// Group Invite, `[Friend, Group Type, Token]`.
     GroupInvite(Friend, GroupType, Vec<u8>),
+    #[cfg(feature = "groupchat")]
     /// Group Message, `[Friend, Peer, Message Type, Message]`.
     GroupMessage(Group, Peer, MessageType, Vec<u8>),
+    #[cfg(feature = "groupchat")]
     /// Group Title, `[Friend, Peer or None, Message]`.
     GroupTitle(Group, Option<Peer>, Vec<u8>),
+    #[cfg(feature = "groupchat")]
     /// Group Peer Change.
     GroupPeerChange(Group, Peer, PeerChange)
 }
@@ -84,7 +93,7 @@ impl Listen for Tox {
         unsafe {
             let tx: *mut c_void = transmute(Box::new(sender));
 
-            callback!( ( self.core, tx ),
+            callback!( (self.core, tx),
                 self_connection_status,
 
                 // friend

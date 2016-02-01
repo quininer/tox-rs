@@ -1,4 +1,4 @@
-/// C Function out wrapper
+/// C function out wrapper
 macro_rules! out {
     ( out $out:ident <- $rexpr:expr, $err:ident, $exp:expr ) => {
         unsafe {
@@ -62,7 +62,7 @@ macro_rules! out {
     }
 }
 
-/// fixed size Vec
+/// Fixed size Vec
 macro_rules! vec_with {
     ( $len:expr ) => {{
         let len = $len;
