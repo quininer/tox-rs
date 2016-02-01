@@ -1,4 +1,5 @@
 #![feature(concat_idents)]
+#![feature(stmt_expr_attributes)]
 
 extern crate libc;
 extern crate chrono;

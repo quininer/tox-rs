@@ -12,7 +12,7 @@ fn main() {
     println!(
         "{}: {}",
         String::from_utf8_lossy(&im.name().unwrap()),
-        &im.address().unwrap().out().to_hex()
+        &im.address().out().to_hex()
     );
     im.bootstrap("127.0.0.1", 33445, "269E0A8D082560545170ED8CF16D902615265B04F0E8AD82C7665DDFC3FF5A6C".parse().unwrap()).ok();
 

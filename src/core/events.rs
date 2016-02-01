@@ -4,9 +4,10 @@ use std::time::Duration;
 use std::sync::mpsc::{ channel, Sender, Receiver };
 use libc::*;
 use super::chat::{ MessageID, MessageType };
+use super::group::GroupType;
 use super::{
     ffi, status, vars,
-    Tox, Friend, PublicKey,
+    Tox, Group, Friend, PublicKey,
     Network
 };
 
@@ -36,10 +37,9 @@ pub enum Event {
     // FriendRecv(Friend, File),
     // FriendRecvChunk(Friend, FileChunk),
 
-    // TODO
     // Old API
     // Group
-    // GroupInvite(Friend, Group),
+    GroupInvite(Friend, GroupType, Vec<u8>),
     // GroupMessage(Group, Peer, Vec<u8>),
     // GroupTitle(Group, Peer, Vec<u8>),
     // GroupPeerChange(Group, Peer, PeerAction)
@@ -71,6 +71,8 @@ impl Listen for Tox {
 
             callback!( ( self.core, tx ),
                 self_connection_status,
+
+                // friend
                 friend_request,
                 friend_name,
                 friend_status_message,
@@ -81,6 +83,11 @@ impl Listen for Tox {
                 friend_message,
                 friend_lossy_packet,
                 friend_lossless_packet
+            );
+
+            #[cfg(feature = "groupchat")]
+            callback!( (self.core, tx),
+                group_invite
             );
         };
 
@@ -253,6 +260,30 @@ extern "C" fn on_friend_lossless_packet(
         sender.send(Event::FriendLosslessPacket(
             Friend::from(core, friend_number),
             slice::from_raw_parts(data, length).to_vec()
+        )).ok();
+    }
+}
+
+#[cfg(feature = "groupchat")]
+extern "C" fn on_group_invite(
+    core: *mut ffi::Tox,
+    friend_number: int32_t,
+    group_type: uint8_t,
+    data: *const uint8_t,
+    length: uint16_t,
+    tx: *mut c_void
+) {
+    let group_type = match group_type {
+        0 => GroupType::TEXT,
+        1 => GroupType::AV,
+        _ => return ()
+    };
+    unsafe {
+        let sender: &Sender<Event> = transmute(tx);
+        sender.send(Event::GroupInvite(
+            Friend::from(core, friend_number as u32),
+            group_type,
+            slice::from_raw_parts(data, length as usize).to_vec()
         )).ok();
     }
 }

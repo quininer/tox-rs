@@ -9,6 +9,14 @@ pub use super::ffi::{
 };
 
 
+#[repr(C)]
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum GroupType {
+    TEXT = 0,
+    AV = 1
+}
+
+
 #[derive(Clone, Debug)]
 pub struct Group {
     pub core: *mut ffi::Tox,
