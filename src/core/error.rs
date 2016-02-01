@@ -17,6 +17,26 @@ pub use super::ffi::{
 
 
 #[derive(Debug)]
+pub enum GetStatusErr {
+    Group,
+    Query(QueryFriendErr),
+    GetPK(GetFriendPKErr)
+}
+
+impl From<QueryFriendErr> for GetStatusErr {
+    fn from(err: QueryFriendErr) -> GetStatusErr {
+        GetStatusErr::Query(err)
+    }
+}
+
+impl From<GetFriendPKErr> for GetStatusErr {
+    fn from(err: GetFriendPKErr) -> GetStatusErr {
+        GetStatusErr::GetPK(err)
+    }
+}
+
+
+#[derive(Debug)]
 pub enum AddressParserErr {
     InvalidLength,
     InvalidChecksum,
@@ -30,6 +50,7 @@ impl From<FromHexError> for AddressParserErr {
 }
 
 
+#[derive(Debug)]
 pub enum SendMessageErr {
     Friend(SendMessageFriendErr),
     Group

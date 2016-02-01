@@ -1,7 +1,7 @@
 use std::ffi::{ CString, NulError };
 use super::ffi;
 pub use super::ffi::{
-    TOX_SAVEDATA_TYPE as SaveDataType,
+    TOX_SAVEDATA_TYPE as SavedataType,
     TOX_PROXY_TYPE as ProxyType
 };
 
@@ -14,11 +14,9 @@ pub struct ToxOptions {
 impl ToxOptions {
     /// Generate ToxOptions
     pub fn new() -> ToxOptions {
-        ToxOptions { opts: unsafe {
-            let mut opts = ::std::mem::uninitialized();
-            ffi::tox_options_default(&mut opts);
-            opts
-        } }
+        ToxOptions {
+            opts: out!(get out, ffi::tox_options_default(&mut out))
+        }
     }
 
     pub fn ipv6(mut self, enable: bool) -> ToxOptions {
@@ -26,8 +24,8 @@ impl ToxOptions {
         self
     }
 
-    pub fn udp(mut self, enable: bool) -> ToxOptions {
-        self.opts.udp_enabled = enable;
+    pub fn udp(mut self, disable: bool) -> ToxOptions {
+        self.opts.udp_enabled = disable;
         self
     }
 
@@ -46,7 +44,7 @@ impl ToxOptions {
     }
 
     pub fn from(mut self, data: &[u8]) -> ToxOptions {
-        self.opts.savedata_type = SaveDataType::TOX_SAVE;
+        self.opts.savedata_type = SavedataType::TOX_SAVE;
         self.opts.savedata_data = data.as_ptr();
         self.opts.savedata_length = data.len();
         self

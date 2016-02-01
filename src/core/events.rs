@@ -125,7 +125,7 @@ extern "C" fn on_friend_name(
     unsafe {
         let sender: &Sender<Event> = transmute(tx);
         sender.send(Event::FriendName(
-            Friend::new(core, friend_number),
+            Friend::from(core, friend_number),
             slice::from_raw_parts(name, length).to_vec()
         )).ok();
     }
@@ -141,7 +141,7 @@ extern "C" fn on_friend_status_message(
     unsafe {
         let sender: &Sender<Event> = transmute(tx);
         sender.send(Event::FriendStatusMessage(
-            Friend::new(core, friend_number),
+            Friend::from(core, friend_number),
             slice::from_raw_parts(message, length).to_vec()
         )).ok();
     }
@@ -156,7 +156,7 @@ extern "C" fn on_friend_status(
     unsafe {
         let sender: &Sender<Event> = transmute(tx);
         sender.send(Event::FriendStatus(
-            Friend::new(core, friend_number),
+            Friend::from(core, friend_number),
             status
         )).ok();
     }
@@ -171,7 +171,7 @@ extern "C" fn on_friend_connection_status(
     unsafe {
         let sender: &Sender<Event> = transmute(tx);
         sender.send(Event::FriendConnection(
-            Friend::new(core, friend_number),
+            Friend::from(core, friend_number),
             connection_status
         )).ok();
     }
@@ -186,7 +186,7 @@ extern "C" fn on_friend_typing(
     unsafe {
         let sender: &Sender<Event> = transmute(tx);
         sender.send(Event::FriendTyping(
-            Friend::new(core, friend_number),
+            Friend::from(core, friend_number),
             typing
         )).ok();
     }
@@ -201,7 +201,7 @@ extern "C" fn on_friend_read_receipt(
     unsafe {
         let sender: &Sender<Event> = transmute(tx);
         sender.send(Event::FriendReadReceipt(
-            Friend::new(core, friend_number),
+            Friend::from(core, friend_number),
             message_id
         )).ok();
     }
@@ -218,7 +218,7 @@ extern "C" fn on_friend_message(
     unsafe {
         let sender: &Sender<Event> = transmute(tx);
         sender.send(Event::FriendMessage(
-            Friend::new(core, friend_number),
+            Friend::from(core, friend_number),
             message_type,
             slice::from_raw_parts(message, length).to_vec()
         )).ok();
@@ -235,7 +235,7 @@ extern "C" fn on_friend_lossy_packet(
     unsafe {
         let sender: &Sender<Event> = transmute(tx);
         sender.send(Event::FriendLossyPacket(
-            Friend::new(core, friend_number),
+            Friend::from(core, friend_number),
             slice::from_raw_parts(data, length).to_vec()
         )).ok();
     }
@@ -251,7 +251,7 @@ extern "C" fn on_friend_lossless_packet(
     unsafe {
         let sender: &Sender<Event> = transmute(tx);
         sender.send(Event::FriendLosslessPacket(
-            Friend::new(core, friend_number),
+            Friend::from(core, friend_number),
             slice::from_raw_parts(data, length).to_vec()
         )).ok();
     }

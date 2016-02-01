@@ -1,5 +1,5 @@
 use chrono::NaiveDateTime;
-use super::{ ffi, error };
+use super::{ ffi, Tox, Address, PublicKey, error };
 
 
 #[derive(Clone, Debug)]
@@ -9,11 +9,11 @@ pub struct Friend {
 }
 
 impl Friend {
-    pub fn new(core: *mut ffi::Tox, number: u32) -> Friend {
+    pub fn from(core: *mut ffi::Tox, number: u32) -> Friend {
         Friend { core: core, number: number }
     }
 
-    pub fn delete(&self) -> Result<(), error::DelFriendErr> {
+    pub fn delete(self) -> Result<(), error::DelFriendErr> {
         out!( bool
             err,
             ffi::tox_friend_delete(
@@ -44,5 +44,73 @@ impl Friend {
                 &mut err
             )
         )
+    }
+
+    pub fn set_typing(&self, typing: bool) -> Result<(), error::TypingSetErr> {
+        out!( bool
+            err,
+            ffi::tox_self_set_typing(
+                self.core,
+                self.number,
+                typing,
+                &mut err
+            )
+        )
+    }
+}
+
+pub trait FriendManage {
+    fn request_friend<S: AsRef<[u8]>>(&self, address: Address, message: S) -> Result<Friend, error::AddFriendErr>;
+    fn add_friend(&self, public_key: PublicKey) -> Result<Friend, error::AddFriendErr>;
+    fn get_friend(&self, public_key: PublicKey) -> Result<Friend, error::PKGetFriendErr>;
+    fn exists_friend(&self, friend: Friend) -> bool;
+    fn list_friend(&self) -> Vec<Friend>;
+}
+
+impl FriendManage for Tox {
+    fn request_friend<S: AsRef<[u8]>>(&self, address: Address, message: S) -> Result<Friend, error::AddFriendErr> {
+        let message = message.as_ref();
+        out!( num
+            err,
+            ffi::tox_friend_add(
+                self.core,
+                address.out().as_ptr(),
+                message.as_ptr(),
+                message.len(),
+                &mut err
+            )
+        ).map(|r| Friend::from(self.core, r))
+    }
+    fn add_friend(&self, public_key: PublicKey) -> Result<Friend, error::AddFriendErr> {
+        out!( num
+            err,
+            ffi::tox_friend_add_norequest(
+                self.core,
+                public_key.as_ref().as_ptr(),
+                &mut err
+            )
+        ).map(|r| Friend::from(self.core, r))
+    }
+    fn get_friend(&self, public_key: PublicKey) -> Result<Friend, error::PKGetFriendErr> {
+        out!( num
+            err,
+            ffi::tox_friend_by_public_key(
+                self.core,
+                public_key.as_ref().as_ptr(),
+                &mut err
+            )
+        ).map(|r| Friend::from(self.core, r))
+    }
+    fn exists_friend(&self, friend: Friend) -> bool {
+        unsafe { ffi::tox_friend_exists(self.core, friend.number) }
+    }
+    fn list_friend(&self) -> Vec<Friend> {
+        unsafe {
+            let mut out = vec_with!(ffi::tox_self_get_friend_list_size(self.core));
+            ffi::tox_self_get_friend_list(self.core, out.as_mut_ptr());
+            out.iter()
+                .map(|&r| Friend::from(self.core, r))
+                .collect()
+        }
     }
 }

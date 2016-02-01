@@ -6,7 +6,7 @@ use std::io::Read;
 use std::path::Path;
 use std::env::args;
 use rustc_serialize::hex::ToHex;
-use tox::core::{ ToxOptions, Status };
+use tox::core::{ ToxOptions, Status, FriendManage };
 
 
 fn fileread<P: AsRef<Path>>(path: P) -> Vec<u8> {

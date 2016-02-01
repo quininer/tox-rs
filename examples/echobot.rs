@@ -3,7 +3,7 @@ extern crate rustc_serialize;
 
 use std::thread::sleep;
 use rustc_serialize::hex::ToHex;
-use tox::core::{ ToxOptions, Event, Network, Status, Chat, Listen };
+use tox::core::{ ToxOptions, Event, Network, Status, Chat, Listen, FriendManage };
 
 
 fn main() {

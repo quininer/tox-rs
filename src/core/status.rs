@@ -1,4 +1,4 @@
-use super::{ ffi, Tox, error, vars, Friend, PublicKey, Address };
+use super::{ ffi, Tox, error, vars, Friend, PublicKey };
 pub use super::ffi::{
     TOX_USER_STATUS as UserStatus,
     TOX_CONNECTION as Connection
@@ -6,60 +6,47 @@ pub use super::ffi::{
 
 
 pub trait Status {
-    fn name(&self) -> Result<Vec<u8>, error::QueryFriendErr>;
-    fn address(&self) -> Result<Address, ()>;
-    fn publickey(&self) -> Result<PublicKey, error::GetFriendPKErr>;
-    fn nospam(&self) -> Result<u32, ()>;
-    fn status(&self) -> Result<UserStatus, error::QueryFriendErr>;
-    fn status_message(&self) -> Result<Vec<u8>, error::QueryFriendErr>;
-    fn connection_status(&self) -> Result<Connection, error::QueryFriendErr>;
+    fn name(&self) -> Result<Vec<u8>, error::GetStatusErr>;
+    fn publickey(&self) -> Result<PublicKey, error::GetStatusErr>;
+    fn status(&self) -> Result<UserStatus, error::GetStatusErr>;
+    fn status_message(&self) -> Result<Vec<u8>, error::GetStatusErr>;
+    fn connection_status(&self) -> Result<Connection, error::GetStatusErr>;
 }
 
 impl Status for Tox {
-    fn name(&self) -> Result<Vec<u8>, error::QueryFriendErr> {
+    fn name(&self) -> Result<Vec<u8>, error::GetStatusErr> {
         Ok(out!( get
             out <- vec_with!(ffi::tox_self_get_name_size(self.core)),
             ffi::tox_self_get_name(self.core, out.as_mut_ptr())
         ))
     }
 
-    fn address(&self) -> Result<Address, ()> {
-        Ok(out!( get
-            out <- vec_with!(vars::TOX_ADDRESS_SIZE),
-            ffi::tox_self_get_address(self.core, out.as_mut_ptr())
-        )).map(|r| Address::from(r))
-    }
-
-    fn publickey(&self) -> Result<PublicKey, error::GetFriendPKErr> {
+    fn publickey(&self) -> Result<PublicKey, error::GetStatusErr> {
         Ok(out!( get
             out <- vec_with!(vars::TOX_PUBLIC_KEY_SIZE),
             ffi::tox_self_get_public_key(self.core, out.as_mut_ptr())
         )).map(|r| PublicKey::from(r))
     }
 
-    fn nospam(&self) -> Result<u32, ()> {
-        Ok(unsafe { ffi::tox_self_get_nospam(self.core) })
-    }
-
-    fn status(&self) -> Result<UserStatus, error::QueryFriendErr> {
+    fn status(&self) -> Result<UserStatus, error::GetStatusErr> {
         Ok(unsafe { ffi::tox_self_get_status(self.core) })
     }
 
-    fn status_message(&self) -> Result<Vec<u8>, error::QueryFriendErr> {
+    fn status_message(&self) -> Result<Vec<u8>, error::GetStatusErr> {
         Ok(out!( get
             out <- vec_with!(ffi::tox_self_get_status_message_size(self.core)),
             ffi::tox_self_get_status_message(self.core, out.as_mut_ptr())
         ))
     }
 
-    fn connection_status(&self) -> Result<Connection, error::QueryFriendErr> {
+    fn connection_status(&self) -> Result<Connection, error::GetStatusErr> {
         Ok(unsafe { ffi::tox_self_get_connection_status(self.core) })
     }
 }
 
 
 impl Status for Friend {
-    fn name(&self) -> Result<Vec<u8>, error::QueryFriendErr> {
+    fn name(&self) -> Result<Vec<u8>, error::GetStatusErr> {
         let len = try!(out!( err
             err,
             ffi::tox_friend_get_name_size(
@@ -77,14 +64,10 @@ impl Status for Friend {
                 out.as_mut_ptr(),
                 &mut err
             )
-        )
+        ).map_err(|err| error::GetStatusErr::from(err))
     }
 
-    fn address(&self) -> Result<Address, ()> {
-        unimplemented!()
-    }
-
-    fn publickey(&self) -> Result<PublicKey, error::GetFriendPKErr> {
+    fn publickey(&self) -> Result<PublicKey, error::GetStatusErr> {
         out!( out
             out <- vec_with!(vars::TOX_PUBLIC_KEY_SIZE),
             err,
@@ -94,14 +77,12 @@ impl Status for Friend {
                 out.as_mut_ptr(),
                 &mut err
             )
-        ).map(|r| PublicKey::from(r))
+        )
+            .map(|r| PublicKey::from(r))
+            .map_err(|err| error::GetStatusErr::from(err))
     }
 
-    fn nospam(&self) -> Result<u32, ()> {
-        unimplemented!()
-    }
-
-    fn status(&self) -> Result<UserStatus, error::QueryFriendErr> {
+    fn status(&self) -> Result<UserStatus, error::GetStatusErr> {
         out!( err
             err,
             ffi::tox_friend_get_status(
@@ -109,10 +90,10 @@ impl Status for Friend {
                 self.number,
                 &mut err
             )
-        )
+        ).map_err(|err| error::GetStatusErr::from(err))
     }
 
-    fn status_message(&self) -> Result<Vec<u8>, error::QueryFriendErr> {
+    fn status_message(&self) -> Result<Vec<u8>, error::GetStatusErr> {
         let len = try!(out!( err
             err,
             ffi::tox_friend_get_status_message_size(
@@ -130,10 +111,10 @@ impl Status for Friend {
                 out.as_mut_ptr(),
                 &mut err
             )
-        )
+        ).map_err(|err| error::GetStatusErr::from(err))
     }
 
-    fn connection_status(&self) -> Result<Connection, error::QueryFriendErr> {
+    fn connection_status(&self) -> Result<Connection, error::GetStatusErr> {
         out!( err
             err,
             ffi::tox_friend_get_connection_status(
@@ -141,6 +122,6 @@ impl Status for Friend {
                 self.number,
                 &mut err
             )
-        )
+        ).map_err(|err| error::GetStatusErr::from(err))
     }
 }

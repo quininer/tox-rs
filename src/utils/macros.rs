@@ -56,6 +56,9 @@ macro_rules! out {
             $exp;
             $out
         }
+    };
+    ( get $out:ident, $exp:expr ) => {
+        out!( get $out <- ::std::mem::uninitialized(), $exp);
     }
 }
 

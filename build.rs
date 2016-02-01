@@ -1,3 +1,5 @@
+#![feature(stmt_expr_attributes)]
+
 extern crate ffigen;
 
 use std::fs::File;
@@ -25,8 +27,12 @@ macro_rules! gen {
 
 
 fn main() {
+    #[cfg(feature = "groupchat")]
     gen!("toxcore", ["tox.h", "tox_old.h"], "core/ffi.rs");
-    // gen!("toxcore", ["tox.h"], "core/ffi.rs");
+
+    #[cfg(feature = "newgroupchat")]
+    gen!("toxcore", ["tox.h"], "core/ffi.rs");
+
     gen!("toxav", ["toxav.h"], "av/ffi.rs");
     gen!("toxencryptsave", ["toxencryptsave.h"], "encryptsave/ffi.rs");
 }

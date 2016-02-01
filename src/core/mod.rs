@@ -10,15 +10,26 @@ mod address;
 mod custom;
 mod events;
 
+#[cfg(feature = "groupchat")]
+pub mod group;
+
+#[cfg(feature = "groupchat")]
+pub mod peer;
+
 pub use self::options::ToxOptions;
 pub use self::status::Status;
 pub use self::network::Network;
-pub use self::friend::Friend;
+pub use self::friend::{ Friend, FriendManage };
 pub use self::address::{ PublicKey, Address };
 pub use self::chat::Chat;
 pub use self::custom::Packet;
 pub use self::events::{ Event, Listen };
 
+#[cfg(feature = "groupchat")]
+pub use self::group::{ Group, GroupCreate };
+
+#[cfg(feature = "groupchat")]
+pub use self::peer::Peer;
 
 #[derive(Clone, Debug)]
 pub struct Tox {
@@ -37,11 +48,22 @@ impl Tox {
         )
     }
 
+    pub fn address(&self) -> Address {
+        Address::from(out!( get
+            out <- vec_with!(vars::TOX_ADDRESS_SIZE),
+            ffi::tox_self_get_address(self.core, out.as_mut_ptr())
+        ))
+    }
+
     pub fn secretkey(&self) -> Vec<u8> {
         out!( get
             out <- vec_with!(vars::TOX_SECRET_KEY_SIZE),
             ffi::tox_self_get_secret_key(self.core, out.as_mut_ptr())
         )
+    }
+
+    pub fn nospam(&self) -> u32 {
+        unsafe { ffi::tox_self_get_nospam(self.core) }
     }
 
     pub fn set_name<S: AsRef<[u8]>>(&self, name: S) -> Result<(), error::InfoSetErr> {
@@ -73,63 +95,6 @@ impl Tox {
                 &mut err
             )
         )
-    }
-    pub fn set_typing(&self, friend: Friend, typing: bool) -> Result<(), error::TypingSetErr> {
-        out!( bool
-            err,
-            ffi::tox_self_set_typing(
-                self.core,
-                friend.number,
-                typing,
-                &mut err
-            )
-        )
-    }
-
-    pub fn request_friend<S: AsRef<[u8]>>(&self, address: Address, message: S) -> Result<Friend, error::AddFriendErr> {
-        let message = message.as_ref();
-        out!( num
-            err,
-            ffi::tox_friend_add(
-                self.core,
-                address.out().as_ptr(),
-                message.as_ptr(),
-                message.len(),
-                &mut err
-            )
-        ).map(|r| Friend::new(self.core, r))
-    }
-    pub fn add_friend(&self, public_key: PublicKey) -> Result<Friend, error::AddFriendErr> {
-        out!( num
-            err,
-            ffi::tox_friend_add_norequest(
-                self.core,
-                public_key.as_ref().as_ptr(),
-                &mut err
-            )
-        ).map(|r| Friend::new(self.core, r))
-    }
-    pub fn get_friend(&self, public_key: PublicKey) -> Result<Friend, error::PKGetFriendErr> {
-        out!( num
-            err,
-            ffi::tox_friend_by_public_key(
-                self.core,
-                public_key.as_ref().as_ptr(),
-                &mut err
-            )
-        ).map(|r| Friend::new(self.core, r))
-    }
-    pub fn exists_friend(&self, friend: Friend) -> bool {
-        unsafe { ffi::tox_friend_exists(self.core, friend.number) }
-    }
-    pub fn list_friend(&self) -> Vec<Friend> {
-        unsafe {
-            let mut out = vec_with!(ffi::tox_self_get_friend_list_size(self.core));
-            ffi::tox_self_get_friend_list(self.core, out.as_mut_ptr());
-            out.iter()
-                .map(|&r| Friend::new(self.core, r))
-                .collect()
-        }
     }
 }
 

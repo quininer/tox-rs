@@ -12,3 +12,8 @@ rustc-serialize = "0.3"
 [build-dependencies.ffigen]
 version = "0.1"
 git = "https://github.com/quininer/rust-ffigen.git"
+
+[features]
+default = [ "groupchat" ]
+groupchat = []
+newgroupchat = []
