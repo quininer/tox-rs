@@ -8,6 +8,7 @@ use tox::core::{
     Network, Status, Chat, Listen,
     FriendManage, GroupCreate
 };
+use tox::core::group::GroupManage;
 
 
 fn main() {
@@ -16,7 +17,7 @@ fn main() {
     println!(
         "{}: {}",
         String::from_utf8_lossy(&im.name().unwrap()),
-        &im.address().out().to_hex()
+        &im.address()
     );
     im.bootstrap("127.0.0.1", 33445, "269E0A8D082560545170ED8CF16D902615265B04F0E8AD82C7665DDFC3FF5A6C".parse().unwrap()).ok();
 
@@ -44,8 +45,15 @@ fn main() {
                 im.join(&friend, &token);
             },
             Ok(Event::GroupMessage(group, peer, message_type, message)) => {
-                if peer.publickey().ok() != im.publickey().ok() {
+                if !peer.is_ours() {
                     group.send(message_type, message).ok();
+                    println!(
+                        "peers {:?}",
+                        group.peers().iter()
+                            .map(|p| p.name().unwrap())
+                            .map(|n| String::from_utf8(n).ok())
+                            .collect::<Vec<Option<String>>>()
+                    );
                 }
             },
             Err(_) => (),

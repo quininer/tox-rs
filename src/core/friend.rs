@@ -13,6 +13,7 @@ impl Friend {
         Friend { core: core, number: number }
     }
 
+    /// Delete Friend.
     pub fn delete(self) -> Result<(), error::DelFriendErr> {
         out!( bool
             err,
@@ -24,6 +25,7 @@ impl Friend {
         )
     }
 
+    /// Last Online time.
     pub fn last(&self) -> Result<NaiveDateTime, error::GetFriendLastErr> {
         out!((num <- ::libc::uint64_t)
             err,
@@ -35,6 +37,7 @@ impl Friend {
         ).map(|r| NaiveDateTime::from_timestamp(r as i64, 0))
     }
 
+    /// Is Typing?
     pub fn is_typing(&self) -> Result<bool, error::QueryFriendErr> {
         out!( err
             err,
@@ -46,6 +49,7 @@ impl Friend {
         )
     }
 
+    /// Send Typing.
     pub fn set_typing(&self, typing: bool) -> Result<(), error::TypingSetErr> {
         out!( bool
             err,
@@ -60,10 +64,15 @@ impl Friend {
 }
 
 pub trait FriendManage {
+    /// Request Friend by Address.
     fn request_friend<S: AsRef<[u8]>>(&self, address: Address, message: S) -> Result<Friend, error::AddFriendErr>;
+    /// Add Friend by PublicKey.
     fn add_friend(&self, public_key: PublicKey) -> Result<Friend, error::AddFriendErr>;
+    /// Get Friend number by PublicKey.
     fn get_friend(&self, public_key: PublicKey) -> Result<Friend, error::PKGetFriendErr>;
+    /// Friend exists?
     fn exists_friend(&self, friend: Friend) -> bool;
+    /// Friend List.
     fn list_friend(&self) -> Vec<Friend>;
 }
 

@@ -4,6 +4,7 @@ pub use super::ffi::TOX_MESSAGE_TYPE as MessageType;
 
 pub type MessageID = u32;
 
+/// Send Message.
 pub trait Chat {
     fn send<S: AsRef<[u8]>>(&self, ty: MessageType, message: S) -> Result<MessageID, error::SendMessageErr>;
     fn say<S: AsRef<[u8]>>(&self, message: S) -> Result<MessageID, error::SendMessageErr>;

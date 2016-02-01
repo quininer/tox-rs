@@ -37,10 +37,12 @@ pub struct Tox {
 }
 
 impl Tox {
+    /// from ToxOptions create Tox.
     pub fn new(opts: ToxOptions) -> Result<Tox, error::NewErr> {
         Ok(Tox { core: try!(out!(err err, ffi::tox_new(&opts.opts, &mut err))) })
     }
 
+    /// Get Tox Profile data.
     pub fn save(&self) -> Vec<u8> {
         out!( get
             out <- vec_with!(ffi::tox_get_savedata_size(self.core)),
@@ -48,6 +50,7 @@ impl Tox {
         )
     }
 
+    /// Get Address.
     pub fn address(&self) -> Address {
         Address::from(out!( get
             out <- vec_with!(vars::TOX_ADDRESS_SIZE),
@@ -55,6 +58,7 @@ impl Tox {
         ))
     }
 
+    /// Get SecretKey.
     pub fn secretkey(&self) -> Vec<u8> {
         out!( get
             out <- vec_with!(vars::TOX_SECRET_KEY_SIZE),
@@ -62,10 +66,12 @@ impl Tox {
         )
     }
 
+    /// Get Nospam code.
     pub fn nospam(&self) -> u32 {
         unsafe { ffi::tox_self_get_nospam(self.core) }
     }
 
+    /// Set Name.
     pub fn set_name<S: AsRef<[u8]>>(&self, name: S) -> Result<(), error::InfoSetErr> {
         let name = name.as_ref();
         out!( bool
@@ -78,12 +84,15 @@ impl Tox {
             )
         )
     }
+    /// Set Nospam code.
     pub fn set_nospam(&self, nospam: u32) {
         unsafe { ffi::tox_self_set_nospam(self.core, nospam) }
     }
+    /// Set Status (NONE, AWAY, BUYS).
     pub fn set_status(&self, status: status::UserStatus) {
         unsafe { ffi::tox_self_set_status(self.core, status) }
     }
+    /// Set Status Message.
     pub fn set_status_message<S: AsRef<[u8]>>(&self, message: S) -> Result<(), error::InfoSetErr> {
         let message = message.as_ref();
         out!( bool

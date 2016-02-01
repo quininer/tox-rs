@@ -16,6 +16,7 @@ impl Peer {
         Peer { group: group.clone(), number: number }
     }
 
+    /// Peer is Self ?
     pub fn is_ours(&self) -> bool {
         unsafe { ffi::tox_group_peernumber_is_ours(
             self.group.core,
@@ -27,17 +28,38 @@ impl Peer {
 
 impl Status for Peer {
     fn name(&self) -> Result<Vec<u8>, error::GetStatusErr> {
-        let mut name = unsafe { vec_with!(vars::TOX_MAX_NAME_LENGTH) };
-        match unsafe { ffi::tox_group_peername(
+        let len = unsafe { ffi::tox_group_number_peers(
+            self.group.core,
+            self.group.number
+        ) };
+        let mut names = unsafe { vec_with!(len as usize) };
+        let mut lengths = unsafe { vec_with!(len as usize) };
+        if unsafe { ffi::tox_group_get_names(
             self.group.core,
             self.group.number,
-            self.number,
-            name.as_mut_ptr()
-        ) } {
-            -1 => Err(error::GetStatusErr::Group),
-            _ => Ok(name)
-        }
+            names.as_mut_ptr(),
+            lengths.as_mut_ptr(),
+            len as ::libc::uint16_t
+        ) == -1 } {
+            return Err(error::GetStatusErr::Group);
+        };
+        let name_len = lengths[self.number as usize];
+        Ok(names[self.number as usize][..name_len as usize].to_vec())
     }
+
+    // fn name(&self) -> Result<Vec<u8>, error::GetStatusErr> {
+    //     let mut name = unsafe { vec_with!(vars::TOX_MAX_NAME_LENGTH) };
+    //     match unsafe { ffi::tox_group_peername(
+    //         self.group.core,
+    //         self.group.number,
+    //         self.number,
+    //         name.as_mut_ptr()
+    //     ) } {
+    //         -1 => Err(error::GetStatusErr::Group),
+    //         _ => Ok(name)
+    //     }
+    // }
+
     fn publickey(&self) -> Result<PublicKey, error::GetStatusErr> {
         let mut pk = unsafe { vec_with!(vars::TOX_PUBLIC_KEY_SIZE) };
         match unsafe { ffi::tox_group_peer_pubkey(
@@ -50,12 +72,18 @@ impl Status for Peer {
             _ => Ok(PublicKey::from(pk))
         }
     }
+
+    /// unimplemented, TODO new groupchat.
     fn status(&self) -> Result<UserStatus, error::GetStatusErr> {
         unimplemented!()
     }
+
+    /// unimplemented, TODO new groupchat.
     fn status_message(&self) -> Result<Vec<u8>, error::GetStatusErr> {
         unimplemented!()
     }
+
+    /// unimplemented, TODO new groupchat.
     fn connection_status(&self) -> Result<Connection, error::GetStatusErr> {
         unimplemented!()
     }

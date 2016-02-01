@@ -6,10 +6,15 @@ pub use super::ffi::{
 
 
 pub trait Status {
+    /// Get Name.
     fn name(&self) -> Result<Vec<u8>, error::GetStatusErr>;
+    /// Get Public Key.
     fn publickey(&self) -> Result<PublicKey, error::GetStatusErr>;
+    /// Get Status.
     fn status(&self) -> Result<UserStatus, error::GetStatusErr>;
+    /// Get Status Message.
     fn status_message(&self) -> Result<Vec<u8>, error::GetStatusErr>;
+    /// Get Connection Status.
     fn connection_status(&self) -> Result<Connection, error::GetStatusErr>;
 }
 

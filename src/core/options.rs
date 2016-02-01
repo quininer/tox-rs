@@ -19,16 +19,19 @@ impl ToxOptions {
         }
     }
 
+    /// Use IPv6.
     pub fn ipv6(mut self, enable: bool) -> ToxOptions {
         self.opts.ipv6_enabled = enable;
         self
     }
 
+    /// Disable UDP.
     pub fn udp(mut self, disable: bool) -> ToxOptions {
         self.opts.udp_enabled = disable;
         self
     }
 
+    /// Use Proxy.
     pub fn proxy(mut self, pty: ProxyType, host: &str, port: u16) -> Result<ToxOptions, NulError> {
         self.opts.proxy_type = pty;
         self.opts.proxy_host = try!(CString::new(host)).as_ptr();
@@ -36,6 +39,7 @@ impl ToxOptions {
         Ok(self)
     }
 
+    /// Specify Port.
     pub fn port(mut self, start: u16, end: u16, tcp: u16) -> ToxOptions {
         self.opts.start_port = start;
         self.opts.end_port = end;
@@ -43,6 +47,7 @@ impl ToxOptions {
         self
     }
 
+    /// Read Profile data.
     pub fn from(mut self, data: &[u8]) -> ToxOptions {
         self.opts.savedata_type = SavedataType::TOX_SAVE;
         self.opts.savedata_data = data.as_ptr();
@@ -50,6 +55,7 @@ impl ToxOptions {
         self
     }
 
+    /// Generate Tox.
     pub fn generate(self) -> Result<super::Tox, super::error::NewErr> {
         super::Tox::new(self)
     }

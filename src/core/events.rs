@@ -14,22 +14,33 @@ use super::{
 
 #[derive(Clone, Debug)]
 pub enum Event {
+    /// Self Connection Status.
     SelfConnection(status::Connection),
+    /// Friend Request, `[PublicKey, Message]`.
     RequestFriend(PublicKey, Vec<u8>),
 
     // Friend status
+    /// Friend Name, `[Friend, Name]`.
     FriendName(Friend, Vec<u8>),
+    /// Friend Status Message, `[Friend, Status Message]`.
     FriendStatusMessage(Friend, Vec<u8>),
+    /// Friend Status.
     FriendStatus(Friend, status::UserStatus),
+    /// Friend Connection Status.
     FriendConnection(Friend, status::Connection),
 
     // Friend basic Message
+    /// Friend Typing, `[Friend, is Typing]`.
     FriendTyping(Friend, bool),
+    /// Friend Receipt, (no read).
     FriendReadReceipt(Friend, MessageID),
+    /// Friend Message, `[Friend, Message Type, Message]`.
     FriendMessage(Friend, MessageType, Vec<u8>),
 
     // Friend Custom Packet
+    /// Friend Lossy Packet, `[Friend, Data]`.
     FriendLossyPacket(Friend, Vec<u8>),
+    /// Friend Lossless Packet, `[Friend, Data]`.
     FriendLosslessPacket(Friend, Vec<u8>),
 
     // TODO
@@ -39,9 +50,13 @@ pub enum Event {
 
     // Old API
     // Group
+    /// Group Invite, `[Friend, Group Type, Token]`.
     GroupInvite(Friend, GroupType, Vec<u8>),
+    /// Group Message, `[Friend, Peer, Message Type, Message]`.
     GroupMessage(Group, Peer, MessageType, Vec<u8>),
+    /// Group Title, `[Friend, Peer or None, Message]`.
     GroupTitle(Group, Option<Peer>, Vec<u8>),
+    /// Group Peer Change.
     GroupPeerChange(Group, Peer, PeerChange)
 }
 

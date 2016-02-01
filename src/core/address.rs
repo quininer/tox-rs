@@ -1,5 +1,6 @@
 use std::str::FromStr;
-use rustc_serialize::hex::FromHex;
+use std::fmt;
+use rustc_serialize::hex::{ FromHex, ToHex };
 use super::vars::{ TOX_PUBLIC_KEY_SIZE, TOX_ADDRESS_SIZE };
 use super::error;
 
@@ -57,6 +58,7 @@ impl<'a> From<&'a [u8]> for Address {
 }
 
 impl Address {
+    /// Output Address to `Vec<u8>`.
     pub fn out(&self) -> Vec<u8> {
         vec![
             self.publickey.as_ref().to_vec(),
@@ -65,6 +67,7 @@ impl Address {
         ].concat()
     }
 
+    /// Check sum.
     pub fn check(&self) -> bool {
         let mut check = [0; 2];
         for (i, &k) in self.publickey.as_ref().iter().enumerate() {
@@ -149,5 +152,17 @@ impl FromStr for Address {
 impl AsRef<PublicKey> for Address {
     fn as_ref(&self) -> &PublicKey {
         &self.publickey
+    }
+}
+
+impl fmt::Display for PublicKey {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.as_ref().to_vec().to_hex().to_uppercase())
+    }
+}
+
+impl fmt::Display for Address {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.out().to_hex().to_uppercase())
     }
 }

@@ -29,9 +29,11 @@ impl Group {
         Group { core: core, number: number }
     }
 
-    pub fn delete(self) -> bool {
+    /// Leave GroupChat.
+    pub fn leave(self) -> bool {
         unsafe { ffi::tox_del_groupchat(self.core, self.number) == 0 }
     }
+    /// Invite friend to GroupChat.
     pub fn invite(&self, friend: Friend) -> bool {
         unsafe { ffi::tox_invite_friend(
             self.core,
@@ -42,7 +44,9 @@ impl Group {
 }
 
 pub trait GroupCreate {
+    /// Create GroupChat.
     fn create_group(&self) -> Group;
+    /// Join GroupChat.
     fn join(&self, friend: &Friend, data: &[u8]) -> Group;
 }
 
@@ -62,6 +66,7 @@ impl GroupCreate for Tox {
         )
     }
 }
+
 
 impl Chat for Group {
     /// old GroupChat API, MessageID only 0.
@@ -97,12 +102,17 @@ impl Chat for Group {
     }
 }
 
+
 pub trait GroupManage {
+    /// Get Group Title.
     fn title(&self) -> Vec<u8>;
+    /// Set Group Title.
     fn set_title(&self, title: &[u8]) -> bool;
+    /// Get Peer list.
     fn peers(&self) -> Vec<Peer>;
     // fn peers_name(&self) -> Vec<Vec<u8>>;
     // fn peers_pk(&self) -> Vec<PublicKey>;
+    /// Get Group type.
     fn get_type(&self) -> GroupType;
 }
 
