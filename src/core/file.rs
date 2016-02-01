@@ -8,6 +8,7 @@ pub use super::ffi::{
 };
 
 
+#[derive(Clone, Debug)]
 pub struct File<T: FileManage> {
     pub target: T,
     pub number: u32,
@@ -20,14 +21,14 @@ impl<T: FileManage> File<T> {
 }
 
 
-pub trait FileSend {
+pub trait FileOperate {
     fn control(&self, control: FileControl) -> Result<(), error::FileControlErr>;
     fn send(&self, position: u64, data: &[u8]) -> Result<(), error::FileChunkSendErr>;
     fn seek(&self, position: u64) -> Result<(), error::FileSeekErr>;
     fn get_id(&self) -> Result<Vec<u8>, error::FileGetErr>;
 }
 
-impl FileSend for File<Friend> {
+impl FileOperate for File<Friend> {
     fn control(&self, control: FileControl) -> Result<(), error::FileControlErr> {
         out!( bool
             err,

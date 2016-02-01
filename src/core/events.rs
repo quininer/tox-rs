@@ -4,6 +4,7 @@ use std::time::Duration;
 use std::sync::mpsc::{ channel, Sender, Receiver };
 use libc::*;
 use super::chat::{ MessageID, MessageType };
+use super::file::{ FileKind, FileControl };
 
 #[cfg(feature = "groupchat")]
 use super::group::{ GroupType, PeerChange, Group };
@@ -13,7 +14,7 @@ use super::peer::Peer;
 
 use super::{
     ffi, status, vars,
-    Tox, Friend, PublicKey,
+    Tox, Friend, PublicKey, File,
     Network
 };
 
@@ -49,10 +50,15 @@ pub enum Event {
     /// Friend Lossless Packet, `[Friend, Data]`.
     FriendLosslessPacket(Friend, Vec<u8>),
 
-    // TODO
     // Firend File
-    // FriendRecv(Friend, File),
-    // FriendRecvChunk(Friend, FileChunk),
+    /// Friend Request File Seek. `[Friend, File, position, length]`.
+    FriendFileSeek(Friend, File<Friend>, u64, usize),
+    /// Friend File Recv. `[Friend, FileKind, File, size, data]`.
+    FriendFileRecv(Friend, FileKind, File<Friend>, u64, Vec<u8>),
+    /// Friend File Chunk Recv. `[Friend, File, position, data]`.
+    FriendFileRecvChunk(Friend, File<Friend>, u64, Vec<u8>),
+    /// Friend File Control.
+    FriendFileControl(Friend, File<Friend>, FileControl),
 
     // Group (Old API)
     #[cfg(feature = "groupchat")]
@@ -106,7 +112,13 @@ impl Listen for Tox {
                 friend_read_receipt,
                 friend_message,
                 friend_lossy_packet,
-                friend_lossless_packet
+                friend_lossless_packet,
+
+                // file
+                file_recv_control,
+                file_chunk_request,
+                file_recv,
+                file_recv_chunk
             );
 
             #[cfg(feature = "groupchat")]
@@ -287,6 +299,96 @@ extern "C" fn on_friend_lossless_packet(
         let sender: &Sender<Event> = transmute(tx);
         sender.send(Event::FriendLosslessPacket(
             Friend::from(core, friend_number),
+            slice::from_raw_parts(data, length).to_vec()
+        )).ok();
+    }
+}
+
+extern "C" fn on_file_recv_control(
+    core: *mut ffi::Tox,
+    friend_number: uint32_t,
+    file_number: uint32_t,
+    control: FileControl,
+    tx: *mut c_void
+) {
+    unsafe {
+        let sender: &Sender<Event> = transmute(tx);
+        let friend = Friend::from(core, friend_number);
+        let file = File::from(friend.clone(), file_number);
+        sender.send(Event::FriendFileControl(
+            friend,
+            file,
+            control
+        )).ok();
+    }
+}
+
+extern "C" fn on_file_chunk_request(
+    core: *mut ffi::Tox,
+    friend_number: uint32_t,
+    file_number: uint32_t,
+    position: uint64_t,
+    length: size_t,
+    tx: *mut c_void
+) {
+    unsafe {
+        let sender: &Sender<Event> = transmute(tx);
+        let friend = Friend::from(core, friend_number);
+        let file = File::from(friend.clone(), file_number);
+        sender.send(Event::FriendFileSeek(
+            friend,
+            file,
+            position,
+            length
+        )).ok();
+    }
+}
+
+extern "C" fn on_file_recv(
+    core: *mut ffi::Tox,
+    friend_number: uint32_t,
+    file_number: uint32_t,
+    kind: uint32_t,
+    file_size: u64,
+    filename: *const uint8_t,
+    filename_len: size_t,
+    tx: *mut c_void
+) {
+    unsafe {
+        let sender: &Sender<Event> = transmute(tx);
+        let friend = Friend::from(core, friend_number);
+        let file = File::from(friend.clone(), file_number);
+        let kind = match kind {
+            1 => FileKind::AVATAR,
+            0 | _ => FileKind::DATA,
+        };
+        sender.send(Event::FriendFileRecv(
+            friend,
+            kind,
+            file,
+            file_size,
+            slice::from_raw_parts(filename, filename_len).to_vec()
+        )).ok();
+    }
+}
+
+extern "C" fn on_file_recv_chunk(
+    core: *mut ffi::Tox,
+    friend_number: uint32_t,
+    file_number: uint32_t,
+    position: uint64_t,
+    data: *const uint8_t,
+    length: size_t,
+    tx: *mut c_void
+) {
+    unsafe {
+        let sender: &Sender<Event> = transmute(tx);
+        let friend = Friend::from(core, friend_number);
+        let file = File::from(friend.clone(), file_number);
+        sender.send(Event::FriendFileRecvChunk(
+            friend,
+            file,
+            position,
             slice::from_raw_parts(data, length).to_vec()
         )).ok();
     }

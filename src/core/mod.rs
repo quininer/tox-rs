@@ -4,12 +4,12 @@ pub mod vars;
 pub mod options;
 pub mod status;
 pub mod chat;
+pub mod file;
 mod friend;
 mod network;
 mod address;
 mod custom;
 mod events;
-pub mod file;
 
 #[cfg(feature = "groupchat")]
 pub mod group;
@@ -25,6 +25,7 @@ pub use self::address::{ PublicKey, Address };
 pub use self::chat::Chat;
 pub use self::custom::Packet;
 pub use self::events::{ Event, Listen };
+pub use self::file::File;
 
 #[cfg(feature = "groupchat")]
 pub use self::group::{ Group, GroupCreate };
