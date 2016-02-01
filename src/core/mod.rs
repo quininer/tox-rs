@@ -9,6 +9,7 @@ mod network;
 mod address;
 mod custom;
 mod events;
+pub mod file;
 
 #[cfg(feature = "groupchat")]
 pub mod group;

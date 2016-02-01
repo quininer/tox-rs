@@ -12,7 +12,12 @@ pub use super::ffi::{
     TOX_ERR_GET_PORT as GetPortErr,
     TOX_ERR_BOOTSTRAP as BootstrapErr,
     TOX_ERR_FRIEND_SEND_MESSAGE as SendMessageFriendErr,
-    TOX_ERR_FRIEND_CUSTOM_PACKET as CustomPacketErr
+    TOX_ERR_FRIEND_CUSTOM_PACKET as CustomPacketErr,
+    TOX_ERR_FILE_SEND as FileSendErr,
+    TOX_ERR_FILE_SEND_CHUNK as FileChunkSendErr,
+    TOX_ERR_FILE_CONTROL as FileControlErr,
+    TOX_ERR_FILE_SEEK as FileSeekErr,
+    TOX_ERR_FILE_GET as FileGetErr
 };
 
 
