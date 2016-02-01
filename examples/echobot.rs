@@ -3,12 +3,16 @@ extern crate rustc_serialize;
 
 use std::thread::sleep;
 use rustc_serialize::hex::ToHex;
-use tox::core::{ ToxOptions, Event, Network, Status, Chat, Listen, FriendManage };
+use tox::core::{
+    ToxOptions, Event,
+    Network, Status, Chat, Listen,
+    FriendManage, GroupCreate
+};
 
 
 fn main() {
     let mut im = ToxOptions::new().generate().unwrap();
-    im.set_name("bot").ok();
+    im.set_name("echobot").ok();
     println!(
         "{}: {}",
         String::from_utf8_lossy(&im.name().unwrap()),
@@ -35,6 +39,14 @@ fn main() {
                     message_type,
                     message
                 ).ok();
+            },
+            Ok(Event::GroupInvite(friend, _, token)) => {
+                im.join(&friend, &token);
+            },
+            Ok(Event::GroupMessage(group, peer, message_type, message)) => {
+                if peer.publickey().ok() != im.publickey().ok() {
+                    group.send(message_type, message).ok();
+                }
             },
             Err(_) => (),
             e @ _ => println!("Event: {:?}", e)

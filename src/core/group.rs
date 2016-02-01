@@ -1,11 +1,12 @@
+use std::mem::transmute;
 use super::{
     ffi, error, vars,
-    Tox, Friend,
+    Tox, Friend, Peer,
     Chat
 };
 use super::chat::{ MessageType, MessageID };
 pub use super::ffi::{
-    TOX_CHAT_CHANGE as ChatChange
+    TOX_CHAT_CHANGE as PeerChange
 };
 
 
@@ -99,8 +100,10 @@ impl Chat for Group {
 pub trait GroupManage {
     fn title(&self) -> Vec<u8>;
     fn set_title(&self, title: &[u8]) -> bool;
-    // fn peers(&self) -> Vec<Peer>;
-    // fn get_type(&self) -> GroupType;
+    fn peers(&self) -> Vec<Peer>;
+    // fn peers_name(&self) -> Vec<Vec<u8>>;
+    // fn peers_pk(&self) -> Vec<PublicKey>;
+    fn get_type(&self) -> GroupType;
 }
 
 impl GroupManage for Group {
@@ -123,5 +126,22 @@ impl GroupManage for Group {
             title.as_ptr(),
             title.len() as ::libc::uint8_t
         ) == 0 }
+    }
+
+    fn peers(&self) -> Vec<Peer> {
+        let count = unsafe { ffi::tox_group_number_peers(
+            self.core,
+            self.number
+        ) };
+        (0..count)
+            .map(|pn| Peer::from(self, pn))
+            .collect()
+    }
+
+    fn get_type(&self) -> GroupType {
+        unsafe { transmute(ffi::tox_group_get_type(
+            self.core,
+            self.number
+        )) }
     }
 }

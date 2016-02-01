@@ -4,10 +4,10 @@ use std::time::Duration;
 use std::sync::mpsc::{ channel, Sender, Receiver };
 use libc::*;
 use super::chat::{ MessageID, MessageType };
-use super::group::GroupType;
+use super::group::{ GroupType, PeerChange };
 use super::{
     ffi, status, vars,
-    Tox, Group, Friend, PublicKey,
+    Tox, Group, Peer, Friend, PublicKey,
     Network
 };
 
@@ -40,9 +40,9 @@ pub enum Event {
     // Old API
     // Group
     GroupInvite(Friend, GroupType, Vec<u8>),
-    // GroupMessage(Group, Peer, Vec<u8>),
-    // GroupTitle(Group, Peer, Vec<u8>),
-    // GroupPeerChange(Group, Peer, PeerAction)
+    GroupMessage(Group, Peer, MessageType, Vec<u8>),
+    GroupTitle(Group, Option<Peer>, Vec<u8>),
+    GroupPeerChange(Group, Peer, PeerChange)
 }
 
 pub trait Listen: Network {
@@ -87,7 +87,11 @@ impl Listen for Tox {
 
             #[cfg(feature = "groupchat")]
             callback!( (self.core, tx),
-                group_invite
+                group_invite,
+                group_message,
+                group_action,
+                group_title,
+                group_namelist_change
             );
         };
 
@@ -273,17 +277,100 @@ extern "C" fn on_group_invite(
     length: uint16_t,
     tx: *mut c_void
 ) {
-    let group_type = match group_type {
-        0 => GroupType::TEXT,
-        1 => GroupType::AV,
-        _ => return ()
-    };
     unsafe {
         let sender: &Sender<Event> = transmute(tx);
         sender.send(Event::GroupInvite(
             Friend::from(core, friend_number as u32),
-            group_type,
+            transmute(group_type as uint32_t),
             slice::from_raw_parts(data, length as usize).to_vec()
+        )).ok();
+    }
+}
+
+#[cfg(feature = "groupchat")]
+extern "C" fn on_group_message(
+    core: *mut ffi::Tox,
+    group_number: c_int,
+    peer_number: c_int,
+    message: *const uint8_t,
+    length: uint16_t,
+    tx: *mut c_void
+) {
+    unsafe {
+        let sender: &Sender<Event> = transmute(tx);
+        let group = Group::from(core, group_number);
+        let peer = Peer::from(&group, peer_number);
+        sender.send(Event::GroupMessage(
+            group,
+            peer,
+            MessageType::NORMAL,
+            slice::from_raw_parts(message, length as usize).to_vec()
+        )).ok();
+    }
+}
+
+#[cfg(feature = "groupchat")]
+extern "C" fn on_group_action(
+    core: *mut ffi::Tox,
+    group_number: c_int,
+    peer_number: c_int,
+    action: *const uint8_t,
+    length: uint16_t,
+    tx: *mut c_void
+) {
+    unsafe {
+        let sender: &Sender<Event> = transmute(tx);
+        let group = Group::from(core, group_number);
+        let peer = Peer::from(&group, peer_number);
+        sender.send(Event::GroupMessage(
+            group,
+            peer,
+            MessageType::ACTION,
+            slice::from_raw_parts(action, length as usize).to_vec()
+        )).ok();
+    }
+}
+
+#[cfg(feature = "groupchat")]
+extern "C" fn on_group_title(
+    core: *mut ffi::Tox,
+    group_number: c_int,
+    peer_number: c_int,
+    title: *const uint8_t,
+    length: uint8_t,
+    tx: *mut c_void
+) {
+    unsafe {
+        let sender: &Sender<Event> = transmute(tx);
+        let group = Group::from(core, group_number);
+        let peer_or = match peer_number {
+            -1 => None,
+            num @ _ => Some(Peer::from(&group, num))
+        };
+        sender.send(Event::GroupTitle(
+            group,
+            peer_or,
+            slice::from_raw_parts(title, length as usize).to_vec()
+        )).ok();
+    }
+}
+
+#[cfg(feature = "groupchat")]
+extern "C" fn on_group_namelist_change(
+    core: *mut ffi::Tox,
+    group_number: c_int,
+    peer_number: c_int,
+    change: uint8_t,
+    tx: *mut c_void
+) {
+    unsafe {
+        let sender: &Sender<Event> = transmute(tx);
+        let group = Group::from(core, group_number);
+        let peer = Peer::from(&group, peer_number);
+        sender.send(Event::GroupPeerChange(
+            group,
+            peer,
+            transmute(change as uint32_t)
         )).ok();
     }
 }
