@@ -22,9 +22,13 @@ impl<T: FileManage> File<T> {
 
 
 pub trait FileOperate {
+    /// File Control.
     fn control(&self, control: FileControl) -> Result<(), error::FileControlErr>;
+    /// File Chunk Send.
     fn send(&self, position: u64, data: &[u8]) -> Result<(), error::FileChunkSendErr>;
+    /// Request File Seek.
     fn seek(&self, position: u64) -> Result<(), error::FileSeekErr>;
+    /// Get File ID.
     fn get_id(&self) -> Result<Vec<u8>, error::FileGetErr>;
 }
 
@@ -87,6 +91,7 @@ impl FileOperate for File<Friend> {
 
 
 pub trait FileManage {
+    /// Start Transmission.
     fn transmission<F: AsRef<[u8]>>(&self, kind: FileKind, filename: F, filesize: u64, fileid: Option<&[u8]>) -> Result<File<Friend>, error::FileSendErr>;
 }
 
