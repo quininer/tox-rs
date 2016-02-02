@@ -62,10 +62,10 @@ impl Tox {
 
     /// Get Address.
     pub fn address(&self) -> Address {
-        Address::from(out!( get
+        out!( get
             out <- vec_with!(vars::TOX_ADDRESS_SIZE),
             ffi::tox_self_get_address(self.core, out.as_mut_ptr())
-        ))
+        ).into()
     }
 
     /// Get SecretKey.

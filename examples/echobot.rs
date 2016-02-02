@@ -39,9 +39,10 @@ fn main() {
                 println!("Self Connection: {:?}", status);
             },
             Ok(Event::RequestFriend(pk, _)) => {
-                im.add_friend(pk).ok();
-                File::create("echobot.tox").unwrap()
-                    .write(&im.save()).unwrap();
+                if im.add_friend(pk).is_ok() {
+                    File::create("echobot.tox").unwrap()
+                        .write(&im.save()).unwrap();
+                }
             },
             Ok(Event::FriendMessage(friend, message_type, message)) => {
                 match message.as_slice() {

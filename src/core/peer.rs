@@ -47,7 +47,7 @@ impl Status for Peer {
             return Err(error::GetStatusErr::Group);
         };
         let name_len = lengths[self.number as usize];
-        Ok(names[self.number as usize][..name_len as usize].to_vec())
+        Ok(names[self.number as usize][..name_len as usize].into())
     }
 
     // fn name(&self) -> Result<Vec<u8>, error::GetStatusErr> {
@@ -72,7 +72,7 @@ impl Status for Peer {
             pk.as_mut_ptr()
         ) } {
             -1 => Err(error::GetStatusErr::Group),
-            _ => Ok(PublicKey::from(pk))
+            _ => Ok(pk.into())
         }
     }
 

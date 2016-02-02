@@ -118,13 +118,14 @@ impl AsRef<[u8]> for PublicKey {
 /// extern crate tox;
 /// use rustc_serialize::hex::ToHex;
 /// use tox::core::vars::TOX_PUBLIC_KEY_SIZE;
-/// use tox::core::Address;
+/// use tox::core::{ Address, PublicKey };
 ///
 /// fn main() {
 ///     let hex = "EDF5A5BE8DFFC1DDFAACC71A0C0FCEEDE7BED4F3FBF9C54D502BE66A297DC37469CDD2311170";
 ///     let address: Address = hex.parse().unwrap();
+///     let pk: PublicKey = address.into();
 ///     assert_eq!(
-///         address.as_ref().as_ref().to_hex().to_uppercase(),
+///         pk.as_ref().to_hex().to_uppercase(),
 ///         &hex[..TOX_PUBLIC_KEY_SIZE*2]
 ///     );
 /// }
@@ -151,9 +152,9 @@ impl FromStr for Address {
     }
 }
 
-impl AsRef<PublicKey> for Address {
-    fn as_ref(&self) -> &PublicKey {
-        &self.publickey
+impl Into<PublicKey> for Address {
+    fn into(self) -> PublicKey {
+        self.publickey
     }
 }
 

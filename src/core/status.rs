@@ -31,7 +31,7 @@ impl Status for Tox {
         Ok(out!( get
             out <- vec_with!(vars::TOX_PUBLIC_KEY_SIZE),
             ffi::tox_self_get_public_key(self.core, out.as_mut_ptr())
-        )).map(|r| PublicKey::from(r))
+        )).map(|r| r.into())
     }
 
     fn status(&self) -> Result<UserStatus, error::GetStatusErr> {
@@ -70,7 +70,7 @@ impl Status for Friend {
                 out.as_mut_ptr(),
                 &mut err
             )
-        ).map_err(|err| error::GetStatusErr::from(err))
+        ).map_err(|err| err.into())
     }
 
     fn publickey(&self) -> Result<PublicKey, error::GetStatusErr> {
@@ -84,8 +84,8 @@ impl Status for Friend {
                 &mut err
             )
         )
-            .map(|r| PublicKey::from(r))
-            .map_err(|err| error::GetStatusErr::from(err))
+            .map(|r| r.into())
+            .map_err(|err| err.into())
     }
 
     fn status(&self) -> Result<UserStatus, error::GetStatusErr> {
@@ -96,7 +96,7 @@ impl Status for Friend {
                 self.number,
                 &mut err
             )
-        ).map_err(|err| error::GetStatusErr::from(err))
+        ).map_err(|err| err.into())
     }
 
     fn status_message(&self) -> Result<Vec<u8>, error::GetStatusErr> {
@@ -117,7 +117,7 @@ impl Status for Friend {
                 out.as_mut_ptr(),
                 &mut err
             )
-        ).map_err(|err| error::GetStatusErr::from(err))
+        ).map_err(|err| err.into())
     }
 
     fn connection_status(&self) -> Result<Connection, error::GetStatusErr> {
@@ -128,6 +128,6 @@ impl Status for Friend {
                 self.number,
                 &mut err
             )
-        ).map_err(|err| error::GetStatusErr::from(err))
+        ).map_err(|err| err.into())
     }
 }

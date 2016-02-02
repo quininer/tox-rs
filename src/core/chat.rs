@@ -24,7 +24,7 @@ impl Chat for Friend {
                 message.len(),
                 &mut err
             )
-        ).map_err(|err| error::SendMessageErr::from(err))
+        ).map_err(|err| err.into())
     }
 
     fn say<S: AsRef<[u8]>>(&self, message: S) -> Result<MessageID, error::SendMessageErr> {

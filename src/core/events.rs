@@ -158,8 +158,8 @@ extern "C" fn on_friend_request(
     unsafe {
         let sender: &Sender<Event> = transmute(tx);
         sender.send(Event::RequestFriend(
-            PublicKey::from(slice::from_raw_parts(public_key, vars::TOX_PUBLIC_KEY_SIZE).to_vec()),
-            slice::from_raw_parts(message, length).to_vec()
+            slice::from_raw_parts(public_key, vars::TOX_PUBLIC_KEY_SIZE).into(),
+            slice::from_raw_parts(message, length).into()
         )).ok();
     }
 }
@@ -175,7 +175,7 @@ extern "C" fn on_friend_name(
         let sender: &Sender<Event> = transmute(tx);
         sender.send(Event::FriendName(
             Friend::from(core, friend_number),
-            slice::from_raw_parts(name, length).to_vec()
+            slice::from_raw_parts(name, length).into()
         )).ok();
     }
 }
@@ -191,7 +191,7 @@ extern "C" fn on_friend_status_message(
         let sender: &Sender<Event> = transmute(tx);
         sender.send(Event::FriendStatusMessage(
             Friend::from(core, friend_number),
-            slice::from_raw_parts(message, length).to_vec()
+            slice::from_raw_parts(message, length).into()
         )).ok();
     }
 }
@@ -269,7 +269,7 @@ extern "C" fn on_friend_message(
         sender.send(Event::FriendMessage(
             Friend::from(core, friend_number),
             message_type,
-            slice::from_raw_parts(message, length).to_vec()
+            slice::from_raw_parts(message, length).into()
         )).ok();
     }
 }
@@ -285,7 +285,7 @@ extern "C" fn on_friend_lossy_packet(
         let sender: &Sender<Event> = transmute(tx);
         sender.send(Event::FriendLossyPacket(
             Friend::from(core, friend_number),
-            slice::from_raw_parts(data, length).to_vec()
+            slice::from_raw_parts(data, length).into()
         )).ok();
     }
 }
@@ -301,7 +301,7 @@ extern "C" fn on_friend_lossless_packet(
         let sender: &Sender<Event> = transmute(tx);
         sender.send(Event::FriendLosslessPacket(
             Friend::from(core, friend_number),
-            slice::from_raw_parts(data, length).to_vec()
+            slice::from_raw_parts(data, length).into()
         )).ok();
     }
 }
@@ -369,7 +369,7 @@ extern "C" fn on_file_recv(
             kind,
             file,
             file_size,
-            slice::from_raw_parts(filename, filename_len).to_vec()
+            slice::from_raw_parts(filename, filename_len).into()
         )).ok();
     }
 }
@@ -391,7 +391,7 @@ extern "C" fn on_file_recv_chunk(
             friend,
             file,
             position,
-            slice::from_raw_parts(data, length).to_vec()
+            slice::from_raw_parts(data, length).into()
         )).ok();
     }
 }
@@ -410,7 +410,7 @@ extern "C" fn on_group_invite(
         sender.send(Event::GroupInvite(
             Friend::from(core, friend_number as u32),
             transmute(group_type as uint32_t),
-            slice::from_raw_parts(data, length as usize).to_vec()
+            slice::from_raw_parts(data, length as usize).into()
         )).ok();
     }
 }
@@ -432,7 +432,7 @@ extern "C" fn on_group_message(
             group,
             peer,
             MessageType::NORMAL,
-            slice::from_raw_parts(message, length as usize).to_vec()
+            slice::from_raw_parts(message, length as usize).into()
         )).ok();
     }
 }
@@ -454,7 +454,7 @@ extern "C" fn on_group_action(
             group,
             peer,
             MessageType::ACTION,
-            slice::from_raw_parts(action, length as usize).to_vec()
+            slice::from_raw_parts(action, length as usize).into()
         )).ok();
     }
 }
@@ -478,7 +478,7 @@ extern "C" fn on_group_title(
         sender.send(Event::GroupTitle(
             group,
             peer_or,
-            slice::from_raw_parts(title, length as usize).to_vec()
+            slice::from_raw_parts(title, length as usize).into()
         )).ok();
     }
 }
