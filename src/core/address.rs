@@ -6,10 +6,13 @@ use super::error;
 
 
 macro_rules! to_slice {
-    ( $vec:expr, $len:expr ) => {{
+    ( $vec:expr; $len:expr ) => {{
+        let mut x = 0;
         let mut out = [0; $len];
-        for (x, &y) in $vec.iter().enumerate() {
+        for &y in $vec.iter() {
+            if x > $len { break };
             out[x] = y;
+            x += 1;
         }
         out
     }};
@@ -31,7 +34,7 @@ pub struct Address {
 
 impl From<Vec<u8>> for PublicKey {
     fn from(v: Vec<u8>) -> PublicKey {
-        PublicKey { inner: to_slice!(v, TOX_PUBLIC_KEY_SIZE) }
+        PublicKey { inner: to_slice![v; TOX_PUBLIC_KEY_SIZE] }
     }
 }
 
@@ -46,9 +49,9 @@ impl From<Vec<u8>> for Address {
         let (pk, nc) = v.split_at(TOX_PUBLIC_KEY_SIZE);
         let (nospam, checksum) = nc.split_at(4);
         Address {
-            publickey: PublicKey { inner: to_slice!(pk, TOX_PUBLIC_KEY_SIZE) },
-            nospam: to_slice!(nospam, 4),
-            checksum: to_slice!(checksum, 2)
+            publickey: PublicKey { inner: to_slice![pk; TOX_PUBLIC_KEY_SIZE] },
+            nospam: to_slice![nospam; 4],
+            checksum: to_slice![checksum; 2]
         }
     }
 }
@@ -99,7 +102,7 @@ impl FromStr for PublicKey {
     fn from_str(s: &str) -> Result<PublicKey, error::AddressParserErr> {
         let key = try!(s.from_hex());
         if key.len() == TOX_PUBLIC_KEY_SIZE {
-            Ok(PublicKey { inner: to_slice!(key, TOX_PUBLIC_KEY_SIZE) })
+            Ok(PublicKey { inner: to_slice![key; TOX_PUBLIC_KEY_SIZE] })
         } else {
             Err(error::AddressParserErr::InvalidLength)
         }
@@ -138,8 +141,8 @@ impl FromStr for Address {
             let (nospam, checksum) = nc.split_at(4 * 2);
             let address = Address {
                 publickey: try!(pk.parse()),
-                nospam: to_slice!(try!(nospam.from_hex()), 4),
-                checksum: to_slice!(try!(checksum.from_hex()), 2)
+                nospam: to_slice![try!(nospam.from_hex()); 4],
+                checksum: to_slice![try!(checksum.from_hex()); 2]
             };
             if address.check() {
                 Ok(address)
@@ -160,7 +163,7 @@ impl Into<PublicKey> for Address {
 
 impl fmt::Display for PublicKey {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.as_ref().to_vec().to_hex().to_uppercase())
+        write!(f, "{}", self.as_ref().to_hex().to_uppercase())
     }
 }
 
