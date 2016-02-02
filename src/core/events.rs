@@ -51,8 +51,8 @@ pub enum Event {
     FriendLosslessPacket(Friend, Vec<u8>),
 
     // Firend File
-    /// Friend Request File Seek. `[Friend, File, position, length]`.
-    FriendFileSeek(Friend, File<Friend>, u64, usize),
+    /// Friend Request File Chunk Request. `[Friend, File, position, length]`.
+    FriendFileChunkRequest(Friend, File<Friend>, u64, usize),
     /// Friend File Recv. `[Friend, FileKind, File, size, data]`.
     FriendFileRecv(Friend, FileKind, File<Friend>, u64, Vec<u8>),
     /// Friend File Chunk Recv. `[Friend, File, position, data]`.
@@ -337,7 +337,7 @@ extern "C" fn on_file_chunk_request(
         let sender: &Sender<Event> = transmute(tx);
         let friend = Friend::from(core, friend_number);
         let file = File::from(friend.clone(), file_number);
-        sender.send(Event::FriendFileSeek(
+        sender.send(Event::FriendFileChunkRequest(
             friend,
             file,
             position,

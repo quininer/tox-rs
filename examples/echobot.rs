@@ -1,21 +1,31 @@
 extern crate tox;
 
+use std::path::Path;
 use std::fs::File;
-use std::io::Write;
+use std::io::{ Write, Read };
 use std::thread::sleep;
 use tox::core::{
     ToxOptions, Event,
     Network, Status, Chat, Listen,
     FriendManage
 };
-use tox::core::file::{ FileControl, FileOperate };
+use tox::core::file::{ FileKind, FileControl, FileOperate, FileManage };
 
 #[cfg(feature = "groupchat")]
 use tox::core::group::{ GroupManage, GroupCreate };
 
 
 fn main() {
-    let mut im = ToxOptions::new().generate().unwrap();
+    let profile = Path::new("echobot.tox");
+    let mut im = if profile.is_file() {
+        let mut data = Vec::new();
+        File::open(profile).unwrap()
+            .read_to_end(&mut data).unwrap();
+        ToxOptions::new().from(&data).generate()
+    } else {
+        ToxOptions::new().generate()
+    }.unwrap();
+
     im.set_name("echobot").ok();
     println!("{}", &im.address());
     im.bootstrap("127.0.0.1", 33445, "269E0A8D082560545170ED8CF16D902615265B04F0E8AD82C7665DDFC3FF5A6C".parse().unwrap()).ok();
@@ -30,6 +40,8 @@ fn main() {
             },
             Ok(Event::RequestFriend(pk, _)) => {
                 im.add_friend(pk).ok();
+                File::create("echobot.tox").unwrap()
+                    .write(&im.save()).unwrap();
             },
             Ok(Event::FriendMessage(friend, message_type, message)) => {
                 match message.as_slice() {
@@ -37,9 +49,23 @@ fn main() {
                         File::create("recvfile").unwrap()
                             .write(&buffer).unwrap();
                     },
+                    b"clean" => {
+                        buffer = Vec::new();
+                    },
+                    b"avatar" => {
+                        friend.transmission(
+                            FileKind::AVATAR,
+                            "avatar.png",
+                            buffer.len() as u64,
+                            None
+                        ).unwrap();
+                    },
                     b"exit" => break 'main,
                     msg @ _ => { friend.send(message_type, msg).ok(); }
                 };
+            },
+            Ok(Event::FriendFileChunkRequest(_, file, pos, size)) => {
+                file.send(pos, &buffer[pos as usize..pos as usize+size]).ok();
             },
 
             Ok(Event::FriendFileRecv(friend, kind, file, size, name)) => {
