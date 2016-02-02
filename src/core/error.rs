@@ -1,5 +1,5 @@
 use rustc_serialize::hex::FromHexError;
-pub use super::ffi::{
+use_as! {
     TOX_ERR_NEW as NewErr,
     TOX_ERR_FRIEND_ADD as AddFriendErr,
     TOX_ERR_SET_INFO as InfoSetErr,
@@ -18,7 +18,7 @@ pub use super::ffi::{
     TOX_ERR_FILE_CONTROL as FileControlErr,
     TOX_ERR_FILE_SEEK as FileSeekErr,
     TOX_ERR_FILE_GET as FileGetErr
-};
+}
 
 
 #[derive(Debug)]

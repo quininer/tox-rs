@@ -1,9 +1,9 @@
 use std::ffi::{ CString, NulError };
 use super::ffi;
-pub use super::ffi::{
+use_as! {
     TOX_SAVEDATA_TYPE as SavedataType,
     TOX_PROXY_TYPE as ProxyType
-};
+}
 
 
 /// Tox Options.

@@ -5,9 +5,9 @@ use super::{
     Chat
 };
 use super::chat::{ MessageType, MessageID };
-pub use super::ffi::{
+use_as! {
     TOX_CHAT_CHANGE as PeerChange
-};
+}
 
 
 #[repr(C)]
@@ -48,13 +48,13 @@ impl Group {
 /// Create GroupChat.
 pub trait GroupCreate {
     /// Create GroupChat.
-    fn create_group(&self) -> Group;
+    fn create(&self) -> Group;
     /// Join GroupChat.
     fn join(&self, friend: &Friend, data: &[u8]) -> Group;
 }
 
 impl GroupCreate for Tox {
-    fn create_group(&self) -> Group {
+    fn create(&self) -> Group {
         Group::from(self.core, unsafe { ffi::tox_add_groupchat(self.core) })
     }
     fn join(&self, friend: &Friend, data: &[u8]) -> Group {

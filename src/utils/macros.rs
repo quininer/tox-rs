@@ -84,9 +84,9 @@ macro_rules! callback {
 
 /// FFI Struct rename
 macro_rules! use_as {
-    ( $( $old:ident -> $new:ident ),* ) => {
+    ( $( $old:ident as $new:ident ),* ) => {
         $(
-            pub type $new = super::ffi::$old;
+            pub use super::ffi::$old as $new;
         )*
     }
 }

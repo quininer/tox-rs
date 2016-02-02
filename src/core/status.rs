@@ -1,8 +1,8 @@
 use super::{ ffi, Tox, error, vars, Friend, PublicKey };
-pub use super::ffi::{
+use_as! {
     TOX_USER_STATUS as UserStatus,
     TOX_CONNECTION as Connection
-};
+}
 
 
 /// Get Status.

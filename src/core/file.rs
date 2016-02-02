@@ -2,10 +2,10 @@ use super::{
     ffi, error, vars,
     Friend
 };
-pub use super::ffi::{
+use_as! {
     TOX_FILE_KIND as FileKind,
     TOX_FILE_CONTROL as FileControl
-};
+}
 
 
 /// File.
