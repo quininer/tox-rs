@@ -8,6 +8,11 @@ build = "build.rs"
 libc = "0.2"
 chrono = "0.2"
 rustc-serialize = "0.3"
+clap = "*"
+secstr = "*"
+ansi_term = "*"
+term_grid = "*"
+colorhash256 = "*"
 
 [build-dependencies.ffigen]
 version = "0.1"

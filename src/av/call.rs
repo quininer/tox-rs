@@ -9,7 +9,7 @@ pub trait Call {
     fn answer(&self, audio_bitrate: u32, video_bitrate: u32) -> Result<(), error::AnswerErr>;
     fn control(&self, control: CallControl) -> Result<(), error::CallControlErr>;
     fn set_bitrate(&self, audio_bitrate: i32, video_bitrate: i32) -> Result<(), error::BitRateSetErr>;
-    fn send_audio(&self, pcm: &[i16], channels: u8, sampling_rate: u32) -> Result<(), error::SendFrameErr>;
+    fn send_audio(&self, pcm: &[i16], sample_count: usize, channels: u8, sampling_rate: u32) -> Result<(), error::SendFrameErr>;
     fn send_video(&self, width: u16, height: u16, y: &[u8], u: &[u8], v: &[u8]) -> Result<(), error::SendFrameErr>;
 }
 
@@ -65,14 +65,16 @@ impl Call for FriendAv {
         )
     }
 
-    fn send_audio(&self, pcm: &[i16], channels: u8, sampling_rate: u32) -> Result<(), error::SendFrameErr> {
+    fn send_audio(&self, pcm: &[i16], sample_count: usize, channels: u8, sampling_rate: u32) -> Result<(), error::SendFrameErr> {
         out!( bool
             err,
             ffi::toxav_audio_send_frame(
                 self.core,
                 self.number,
                 pcm.as_ptr(),
-                sampling_rate as usize * pcm.len() / 1000,
+                sample_count,
+                // pcm.len() / channels as usize,
+                // sampling_rate as usize * 10 / 1000,
                 channels,
                 sampling_rate,
                 &mut err

@@ -68,7 +68,7 @@ fn main() {
                         ).unwrap();
                     },
                     b"call me" => {
-                        friend.to_av(&imav).call(20, 0).unwrap();
+                        friend.to_av(&imav).call(48, 0).unwrap();
                     },
                     b"exit" => break 'main,
                     msg @ _ => { friend.send(message_type, msg).ok(); }
@@ -118,12 +118,35 @@ fn main() {
 
         imav._iterate();
         match aviter.try_recv() {
-            Ok(AvEvent::FriendCall(friendav, _, _)) => {
-                friendav.to_tox(&im).say("Music~").unwrap();
-                friendav.answer(640, 0).unwrap();
+            Ok(AvEvent::FriendCall(friendav, a, v)) => {
+                friendav.to_tox(&im).say("Av~").unwrap();
+                friendav.answer(
+                    if a { 48 } else { 0 },
+                    if v { 5000 } else { 0 }
+                ).unwrap();
             },
-            Ok(AvEvent::FriendAudioFrameReceive(friendav, pcm, channels, sampling_rate)) => {
-                friendav.send_audio(&pcm, channels, sampling_rate).unwrap();
+            Ok(AvEvent::FriendAudioFrameReceive(friendav, pcm, count, chan, rate)) => {
+                // TODO save to file
+                friendav.send_audio(&pcm, count, chan, rate).ok();
+            },
+            Ok(AvEvent::FriendVideoFrameReceive(friendav, w, h, y, u, v, ys, us, vs)) => {
+                // TODO save to file
+                // FIXME ugly
+                let mut yy = Vec::new();
+                for i in 0..h {
+                    let mut yyy = y[(i as usize * ys as usize)..((i as usize * ys as usize) + w as usize)].into();
+                    yy.append(&mut yyy);
+                }
+
+                let mut uu = Vec::new();
+                let mut vv = Vec::new();
+                for i in 0..(h as usize / 2) {
+                    let mut uuu = u[(i as usize * us as usize)..((i as usize * us as usize) + w as usize / 2)].into();
+                    let mut vvv = v[(i as usize * vs as usize)..((i as usize * vs as usize) + w as usize / 2)].into();
+                    uu.append(&mut uuu);
+                    vv.append(&mut vvv);
+                }
+                friendav.send_video(w, h, &yy, &uu, &vv).ok();
             },
             Err(_) => (),
             e @ _ => println!("AvEvent: {:?}", e)
