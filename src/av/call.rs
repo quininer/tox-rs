@@ -1,7 +1,7 @@
 use super::{ ffi, error, FriendAv };
 use_as! {
     TOXAV_CALL_CONTROL as CallControl,
-    TOXAV_FRIEND_CALL_STATE as FriendCallState
+    TOXAV_FRIEND_CALL_STATE as CallState
 }
 
 pub trait Call {
@@ -72,7 +72,7 @@ impl Call for FriendAv {
                 self.core,
                 self.number,
                 pcm.as_ptr(),
-                pcm.len(),
+                sampling_rate as usize * pcm.len() / 1000,
                 channels,
                 sampling_rate,
                 &mut err

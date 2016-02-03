@@ -17,6 +17,8 @@ pub struct ToxAv {
     pub core: *mut ffi::ToxAV
 }
 
+unsafe impl Send for ToxAv {}
+
 impl ToxAv {
     pub fn new(tox: &Tox) -> Result<ToxAv, error::NewAVErr> {
         out!(err err, ffi::toxav_new(transmute(tox.core), &mut err))

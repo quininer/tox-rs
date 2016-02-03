@@ -11,8 +11,8 @@ use tox::core::{
 };
 use tox::core::file::{ FileKind, FileControl, FileOperate, FileManage };
 use tox::av::{ ToxAv, AvEvent };
-use tox::av::toav::ToTox;
-use tox::av::call::{ Call, CallControl };
+use tox::av::toav::{ ToAv, ToTox};
+use tox::av::call::{ Call };
 
 #[cfg(feature = "groupchat")]
 use tox::core::group::{ GroupManage, GroupCreate };
@@ -28,16 +28,16 @@ fn main() {
     } else {
         ToxOptions::new().generate()
     }.unwrap();
+    let mut imav = ToxAv::new(&im).unwrap();
 
     im.set_name("echobot").ok();
     println!("{}", &im.address());
     im.bootstrap("127.0.0.1", 33445, "269E0A8D082560545170ED8CF16D902615265B04F0E8AD82C7665DDFC3FF5A6C".parse().unwrap()).ok();
     let mut buffer: Vec<u8> = Vec::new();
 
-    let mut imav = ToxAv::new(&im).unwrap();
-
     let toxiter = im.iterate();
     let aviter = imav.iterate();
+
     'main: loop {
         sleep(im.interval());
         match toxiter.try_recv() {
@@ -67,6 +67,9 @@ fn main() {
                             None
                         ).unwrap();
                     },
+                    b"call me" => {
+                        friend.to_av(&imav).call(20, 0).unwrap();
+                    },
                     b"exit" => break 'main,
                     msg @ _ => { friend.send(message_type, msg).ok(); }
                 };
@@ -83,7 +86,7 @@ fn main() {
                     size,
                     file.get_id()
                 )).ok();
-                file.control(FileControl::RESUME).ok();
+                file.control(FileControl::RESUME).unwrap();
             },
             Ok(Event::FriendFileRecvChunk(_, _, _, data)) => {
                 buffer = [buffer, data].concat();
@@ -113,14 +116,14 @@ fn main() {
             e @ _ => println!("Event: {:?}", e)
         };
 
+        imav._iterate();
         match aviter.try_recv() {
-            Ok(AvEvent::Call(friendav, _, _)) => {
-                friendav.to_tox(&im).say("Music~").ok();
-                friendav.answer(200, 0).ok();
+            Ok(AvEvent::FriendCall(friendav, _, _)) => {
+                friendav.to_tox(&im).say("Music~").unwrap();
+                friendav.answer(640, 0).unwrap();
             },
-            Ok(AvEvent::AudioFrameReceive(friendav, pcm, channels, sampling_rate)) => {
-                friendav.send_audio(&pcm, channels, sampling_rate).ok();
-                print!(".");
+            Ok(AvEvent::FriendAudioFrameReceive(friendav, pcm, channels, sampling_rate)) => {
+                friendav.send_audio(&pcm, channels, sampling_rate).unwrap();
             },
             Err(_) => (),
             e @ _ => println!("AvEvent: {:?}", e)

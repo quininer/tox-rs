@@ -6,16 +6,16 @@ use libc::*;
 
 use ::core::Listen;
 use super::{ ffi, ToxAv, FriendAv };
-use super::call::FriendCallState;
+use super::call::CallState;
 
 
 #[derive(Clone, Debug)]
 pub enum AvEvent {
-    Call(FriendAv, bool, bool),
-    CallState(FriendAv, FriendCallState),
-    BitRateStatus(FriendAv, u32, u32),
-    AudioFrameReceive(FriendAv, Vec<i16>, u8, u32),
-    VideoFrameReceive(FriendAv, u16, u16, Vec<u8>, Vec<u8>, Vec<u8>)
+    FriendCall(FriendAv, bool, bool),
+    FriendCallState(FriendAv, CallState),
+    FriendBitRateStatus(FriendAv, u32, u32),
+    FriendAudioFrameReceive(FriendAv, Vec<i16>, u8, u32),
+    FriendVideoFrameReceive(FriendAv, u16, u16, Vec<u8>, Vec<u8>, Vec<u8>)
 }
 
 
@@ -56,7 +56,7 @@ extern "C" fn on_call(
 ) {
     unsafe {
         let sender: &Sender<AvEvent> = transmute(tx);
-        sender.send(AvEvent::Call(
+        sender.send(AvEvent::FriendCall(
             FriendAv::from(core, friend_number),
             audio_enabled,
             video_enabled
@@ -72,7 +72,7 @@ extern "C" fn on_call_state(
 ) {
     unsafe {
         let sender: &Sender<AvEvent> = transmute(tx);
-        sender.send(AvEvent::CallState(
+        sender.send(AvEvent::FriendCallState(
             FriendAv::from(core, friend_number),
             transmute(state)
         )).ok();
@@ -88,7 +88,7 @@ extern "C" fn on_bit_rate_status(
 ) {
     unsafe {
         let sender: &Sender<AvEvent> = transmute(tx);
-        sender.send(AvEvent::BitRateStatus(
+        sender.send(AvEvent::FriendBitRateStatus(
             FriendAv::from(core, friend_number),
             audio_bitrate,
             video_bitrate
@@ -107,7 +107,7 @@ extern "C" fn on_audio_receive_frame(
 ) {
     unsafe {
         let sender: &Sender<AvEvent> = transmute(tx);
-        sender.send(AvEvent::AudioFrameReceive(
+        sender.send(AvEvent::FriendAudioFrameReceive(
             FriendAv::from(core, friend_number),
             slice::from_raw_parts(pcm, sample_count * channels as usize).into(),
             channels,
@@ -131,7 +131,7 @@ extern "C" fn on_audio_receive_frame(
 // ) {
 //     unsafe {
 //         let sender: &Sender<AvEvent> = transmute(tx);
-//         sender.send(AvEvent::VideoFrameReceive(
+//         sender.send(AvEvent::FriendVideoFrameReceive(
 //             FriendAv::from(core, friend_number),
 //             width,
 //             height,
