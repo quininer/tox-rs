@@ -134,15 +134,15 @@ fn main() {
                 // FIXME ugly
                 let mut yy = Vec::new();
                 for i in 0..h {
-                    let mut yyy = y[(i as usize * ys as usize)..((i as usize * ys as usize) + w as usize)].into();
+                    let mut yyy = y[(i as usize * ys as usize) .. ((i as usize * ys as usize) + w as usize)].into();
                     yy.append(&mut yyy);
                 }
 
                 let mut uu = Vec::new();
                 let mut vv = Vec::new();
                 for i in 0..(h as usize / 2) {
-                    let mut uuu = u[(i as usize * us as usize)..((i as usize * us as usize) + w as usize / 2)].into();
-                    let mut vvv = v[(i as usize * vs as usize)..((i as usize * vs as usize) + w as usize / 2)].into();
+                    let mut uuu = u[(i as usize * us as usize) .. ((i as usize * us as usize) + w as usize / 2)].into();
+                    let mut vvv = v[(i as usize * vs as usize) .. ((i as usize * vs as usize) + w as usize / 2)].into();
                     uu.append(&mut uuu);
                     vv.append(&mut vvv);
                 }

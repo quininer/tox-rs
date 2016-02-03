@@ -1,6 +1,7 @@
 mod ffi;
 pub mod error;
 
+use std::borrow::Borrow;
 
 pub const PASS_KEY_LENGTH: usize = 32;
 pub const PASS_SALT_LENGTH: usize = 32;
@@ -28,7 +29,7 @@ pub struct ToxPassKey {
 /// let passphrase = b"tox-rs";
 /// let data = b"Tox on Rust, oh shift..";
 ///
-/// let ciphertext = ToxPassKey::new(passphrase).unwrap()
+/// let ciphertext = ToxPassKey::new(passphrase.as_ref()).unwrap()
 ///     .encrypt(data).unwrap();
 /// let plaintext = ToxPassKey::from(passphrase, &ciphertext).unwrap()
 ///     .decrypt(&ciphertext).unwrap();
@@ -37,7 +38,8 @@ pub struct ToxPassKey {
 /// ```
 impl ToxPassKey {
     /// Generate ToxPassKey, using a random salt.
-    pub fn new(passphrase: &[u8]) -> Result<ToxPassKey, error::KeyDerivationErr> {
+    pub fn new<B: Borrow<[u8]>>(passphrase: B) -> Result<ToxPassKey, error::KeyDerivationErr> {
+        let passphrase = passphrase.borrow();
         out!( out
             out, err,
             ffi::tox_derive_key_from_pass(

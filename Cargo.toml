@@ -16,9 +16,10 @@ git = "https://github.com/quininer/rust-ffigen.git"
 [dev-dependencies]
 clap = "*"
 secstr = "*"
-ansi_term = "*"
 term_grid = "*"
-colorhash256 = "*"
+
+# [dev-dependencies.ttyaskpass]
+# path = "../sec-about/ttyaskpass"
 
 [features]
 default = [ "groupchat" ]
