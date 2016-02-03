@@ -7,12 +7,10 @@ use super::error;
 
 macro_rules! to_slice {
     ( $vec:expr; $len:expr ) => {{
-        let mut x = 0;
+        let ins = $vec;
         let mut out = [0; $len];
-        for &y in $vec.iter() {
-            if x > $len { break };
-            out[x] = y;
-            x += 1;
+        for i in 0..out.len() {
+            out[i] = ins[i];
         }
         out
     }};
@@ -32,20 +30,16 @@ pub struct Address {
     checksum: [u8; 2]
 }
 
-impl From<Vec<u8>> for PublicKey {
-    fn from(v: Vec<u8>) -> PublicKey {
-        PublicKey { inner: to_slice![v; TOX_PUBLIC_KEY_SIZE] }
+impl<V> From<V> for PublicKey where V: Into<Vec<u8>> {
+    fn from(v: V) -> PublicKey {
+        PublicKey { inner: to_slice![v.into(); TOX_PUBLIC_KEY_SIZE] }
     }
 }
 
-impl<'a> From<&'a [u8]> for PublicKey {
-    fn from(v: &[u8]) -> PublicKey {
-        PublicKey::from(v.to_vec())
-    }
-}
 
-impl From<Vec<u8>> for Address {
-    fn from(v: Vec<u8>) -> Address {
+impl<V> From<V> for Address where V: Into<Vec<u8>> {
+    fn from(v: V) -> Address {
+        let v = v.into();
         let (pk, nc) = v.split_at(TOX_PUBLIC_KEY_SIZE);
         let (nospam, checksum) = nc.split_at(4);
         Address {
@@ -53,12 +47,6 @@ impl From<Vec<u8>> for Address {
             nospam: to_slice![nospam; 4],
             checksum: to_slice![checksum; 2]
         }
-    }
-}
-
-impl<'a> From<&'a [u8]> for Address {
-    fn from(v: &[u8]) -> Address {
-        Address::from(v.to_vec())
     }
 }
 
