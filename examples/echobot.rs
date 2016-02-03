@@ -10,6 +10,9 @@ use tox::core::{
     FriendManage
 };
 use tox::core::file::{ FileKind, FileControl, FileOperate, FileManage };
+use tox::av::{ ToxAv, AvEvent };
+use tox::av::toav::ToTox;
+use tox::av::call::{ Call, CallControl };
 
 #[cfg(feature = "groupchat")]
 use tox::core::group::{ GroupManage, GroupCreate };
@@ -31,7 +34,10 @@ fn main() {
     im.bootstrap("127.0.0.1", 33445, "269E0A8D082560545170ED8CF16D902615265B04F0E8AD82C7665DDFC3FF5A6C".parse().unwrap()).ok();
     let mut buffer: Vec<u8> = Vec::new();
 
+    let mut imav = ToxAv::new(&im).unwrap();
+
     let toxiter = im.iterate();
+    let aviter = imav.iterate();
     'main: loop {
         sleep(im.interval());
         match toxiter.try_recv() {
@@ -105,6 +111,19 @@ fn main() {
 
             Err(_) => (),
             e @ _ => println!("Event: {:?}", e)
-        }
+        };
+
+        match aviter.try_recv() {
+            Ok(AvEvent::Call(friendav, _, _)) => {
+                friendav.to_tox(&im).say("Music~").ok();
+                friendav.answer(200, 0).ok();
+            },
+            Ok(AvEvent::AudioFrameReceive(friendav, pcm, channels, sampling_rate)) => {
+                friendav.send_audio(&pcm, channels, sampling_rate).ok();
+                print!(".");
+            },
+            Err(_) => (),
+            e @ _ => println!("AvEvent: {:?}", e)
+        };
     }
 }

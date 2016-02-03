@@ -74,10 +74,10 @@ macro_rules! vec_with {
 
 /// Event Callback
 macro_rules! callback {
-    ( ( $core:expr, $tx:expr ), $( $event:ident ),* ) => {{
+    ( ( $prefix:ident, $core:expr, $tx:expr ), $( $event:ident ),* ) => {{
         use super::ffi::*;
         $(
-            concat_idents!(tox_callback_, $event)($core, concat_idents!(on_, $event), $tx);
+            concat_idents!($prefix, _callback_, $event)($core, concat_idents!(on_, $event), $tx);
         )*
     }}
 }

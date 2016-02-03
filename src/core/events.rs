@@ -14,8 +14,7 @@ use super::peer::Peer;
 
 use super::{
     ffi, status, vars,
-    Tox, Friend, PublicKey, File,
-    Network
+    Tox, Friend, PublicKey, File
 };
 
 
@@ -77,17 +76,17 @@ pub enum Event {
 
 
 /// Listen Events.
-pub trait Listen: Network {
+pub trait Listen<E> {
     fn _interval(&self) -> Duration;
     fn _iterate(&mut self);
     fn interval(&mut self) -> Duration {
         self._iterate();
         self._interval()
     }
-    fn iterate(&mut self) -> Receiver<Event>;
+    fn iterate(&mut self) -> Receiver<E>;
 }
 
-impl Listen for Tox {
+impl Listen<Event> for Tox {
     fn _interval(&self) -> Duration {
         Duration::from_millis(unsafe { ffi::tox_iteration_interval(self.core) } as u64)
     }
@@ -101,7 +100,7 @@ impl Listen for Tox {
         unsafe {
             let tx: *mut c_void = transmute(Box::new(sender));
 
-            callback!( (self.core, tx),
+            callback!( (tox, self.core, tx),
                 self_connection_status,
 
                 // friend
@@ -124,7 +123,7 @@ impl Listen for Tox {
             );
 
             #[cfg(feature = "groupchat")]
-            callback!( (self.core, tx),
+            callback!( (tox, self.core, tx),
                 group_invite,
                 group_message,
                 group_action,
@@ -360,13 +359,9 @@ extern "C" fn on_file_recv(
         let sender: &Sender<Event> = transmute(tx);
         let friend = Friend::from(core, friend_number);
         let file = File::from(friend.clone(), file_number);
-        let kind = match kind {
-            1 => FileKind::AVATAR,
-            0 | _ => FileKind::DATA,
-        };
         sender.send(Event::FriendFileRecv(
             friend,
-            kind,
+            transmute(kind),
             file,
             file_size,
             slice::from_raw_parts(filename, filename_len).into()

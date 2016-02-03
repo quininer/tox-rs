@@ -37,7 +37,7 @@ pub use self::peer::Peer;
 /// Tox.
 #[derive(Clone, Debug)]
 pub struct Tox {
-    core: *mut ffi::Tox
+    pub core: *mut ffi::Tox
 }
 
 impl Tox {
