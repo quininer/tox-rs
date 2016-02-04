@@ -18,8 +18,8 @@ clap = "*"
 secstr = "*"
 term_grid = "*"
 
-# [dev-dependencies.ttyaskpass]
-# path = "../sec-about/ttyaskpass"
+[dev-dependencies.ttyaskpass]
+path = "../../sec-about/ttyaskpass"
 
 [features]
 default = [ "groupchat" ]

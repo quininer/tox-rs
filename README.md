@@ -1,4 +1,4 @@
-Tox-rs
+tox-rs
 ======
 
 Rust bindings for [toxcore](https://github.com/irungentoo/toxcore).

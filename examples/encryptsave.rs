@@ -1,12 +1,13 @@
 extern crate clap;
 extern crate tox;
+extern crate ttyaskpass;
 
-use std::io::stdout;
 use std::fs::File;
 use std::path::Path;
-use std::io::{ Read, Write };
+use std::io::{ stdout, Read, Write };
 use clap::{ App, Arg, SubCommand };
-use tox::encryptsave::{ ToxPassKey, is_encrypted };
+use ttyaskpass::askpass;
+use tox::encryptsave::{ pass_encrypt, pass_decrypt, is_encrypted };
 
 
 fn read<P: AsRef<Path>>(path: P) -> Vec<u8> {
@@ -21,11 +22,11 @@ fn write<P: AsRef<Path>>(path: P, data: &[u8]) {
 
 fn main() {
     let app = App::new("EncryptSave")
-        .about("Tox-rs examples - encryptsave.")
+        .about("Tox on Rust examples - encryptsave.")
         .args(&[
-            Arg::from_usage("<input> 'input file.'"),
-            Arg::from_usage("-p, --passwd [passphrase] 'passphrase.'").global(true),
-            Arg::from_usage("-o, --output [file] 'out file.'").global(true)
+            Arg::from_usage("<INPUT> 'input file.'"),
+            Arg::from_usage("-p, --passwd [Passphrase] 'Passphrase.'").global(true),
+            Arg::from_usage("-o, --output [File] 'Out file.'").global(true)
         ])
         .subcommands(vec![
             SubCommand::with_name("en").about("Encryption"),
@@ -38,13 +39,13 @@ fn main() {
 
     match matches.subcommand() {
         ("en", Some(sub)) | ("de", Some(sub)) => {
-            let passkey = ToxPassKey::new(
-                sub.value_of("passwd").unwrap().as_bytes()
-            ).unwrap();
-            let input = read(matches.value_of("input").unwrap());
+            let passphrase: Vec<u8> = sub.value_of("passwd")
+                .map(|s| s.into())
+                .unwrap_or_else(|| askpass(b"~").unsecure().into());
+            let input = read(matches.value_of("INPUT").unwrap());
             let output = match matches.subcommand_name() {
-                Some("en") => passkey.encrypt(&input).unwrap(),
-                Some("de") => passkey.decrypt(&input).unwrap(),
+                Some("en") => pass_encrypt(&passphrase, &input).unwrap(),
+                Some("de") => pass_decrypt(&passphrase, &input).unwrap(),
                 _ => unreachable!()
             };
             match sub.value_of("output") {
@@ -59,7 +60,7 @@ fn main() {
         ("is", Some(_)) => { println!(
             "{:?}",
             is_encrypted(&read(
-                matches.value_of("input").unwrap()
+                matches.value_of("INPUT").unwrap()
             )))
         },
         _ => { stdout().write(&help_buf).ok(); }
