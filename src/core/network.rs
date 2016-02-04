@@ -1,24 +1,26 @@
 use std::ffi::CString;
+use std::net::ToSocketAddrs;
 use super::{ ffi, Tox, error, vars, PublicKey };
+use ::utils::addr_to_string;
 
 
 /// Network.
 pub trait Network {
-    fn bootstrap<S: AsRef<str>>(&self, ipaddress: S, port: u16, public_key: PublicKey) -> Result<(), error::BootstrapErr>;
-    fn addtcprelay<S: AsRef<str>>(&self, ipaddress: S, port: u16, public_key: PublicKey) -> Result<(), error::BootstrapErr>;
+    fn bootstrap<A: ToSocketAddrs>(&self, addr: A, public_key: PublicKey) -> Result<(), error::BootstrapErr>;
+    fn addtcprelay<A: ToSocketAddrs>(&self, addr: A, public_key: PublicKey) -> Result<(), error::BootstrapErr>;
     fn dhtid(&self) -> Vec<u8>;
     fn udpport(&self) -> Result<u16, error::GetPortErr>;
     fn tcpport(&self) -> Result<u16, error::GetPortErr>;
 }
 
 impl Network for Tox {
-    fn bootstrap<S: AsRef<str>>(&self, ipaddress: S, port: u16, public_key: PublicKey) -> Result<(), error::BootstrapErr> {
-        let ipaddress = ipaddress.as_ref();
+    fn bootstrap<A: ToSocketAddrs>(&self, addr: A, public_key: PublicKey) -> Result<(), error::BootstrapErr> {
+        let (host, port) = try!(addr_to_string(addr));
         out!( bool
             err,
             ffi::tox_bootstrap(
                 self.core,
-                CString::from_vec_unchecked(ipaddress.bytes().collect()).as_ptr(),
+                CString::from_vec_unchecked(host.into_bytes()).as_ptr(),
                 port,
                 public_key.as_ref().as_ptr(),
                 &mut err
@@ -26,13 +28,13 @@ impl Network for Tox {
         )
     }
 
-    fn addtcprelay<S: AsRef<str>>(&self, ipaddress: S, port: u16, public_key: PublicKey) -> Result<(), error::BootstrapErr> {
-        let ipaddress = ipaddress.as_ref();
+    fn addtcprelay<A: ToSocketAddrs>(&self, addr: A, public_key: PublicKey) -> Result<(), error::BootstrapErr> {
+        let (host, port) = try!(addr_to_string(addr));
         out!( bool
             err,
             ffi::tox_add_tcp_relay(
                 self.core,
-                CString::from_vec_unchecked(ipaddress.bytes().collect()).as_ptr(),
+                CString::from_vec_unchecked(host.into_bytes()).as_ptr(),
                 port,
                 public_key.as_ref().as_ptr(),
                 &mut err

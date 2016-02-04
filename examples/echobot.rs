@@ -32,7 +32,7 @@ fn main() {
 
     im.set_name("echobot").ok();
     println!("{}", &im.address());
-    im.bootstrap("127.0.0.1", 33445, "269E0A8D082560545170ED8CF16D902615265B04F0E8AD82C7665DDFC3FF5A6C".parse().unwrap()).ok();
+    im.bootstrap("127.0.0.1:33445",  "269E0A8D082560545170ED8CF16D902615265B04F0E8AD82C7665DDFC3FF5A6C".parse().unwrap()).ok();
     let mut buffer: Vec<u8> = Vec::new();
 
     let toxiter = im.iterate();

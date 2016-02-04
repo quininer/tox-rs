@@ -1,3 +1,4 @@
+use std::io;
 use rustc_serialize::hex::FromHexError;
 use_as! {
     TOX_ERR_NEW as NewErr,
@@ -64,5 +65,11 @@ pub enum SendMessageErr {
 impl From<SendMessageFriendErr> for SendMessageErr {
     fn from(err: SendMessageFriendErr) -> SendMessageErr {
         SendMessageErr::Friend(err)
+    }
+}
+
+impl From<io::Error> for BootstrapErr {
+    fn from(_: io::Error) -> BootstrapErr {
+        BootstrapErr::BAD_HOST
     }
 }
