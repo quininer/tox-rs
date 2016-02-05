@@ -48,25 +48,28 @@ impl Group {
 /// Create GroupChat.
 pub trait GroupCreate {
     /// Create GroupChat.
-    fn create(&self) -> Group;
+    fn create(&self) -> Result<Group, ()>;
     /// Join GroupChat.
-    fn join(&self, friend: &Friend, data: &[u8]) -> Group;
+    fn join(&self, friend: &Friend, data: &[u8]) -> Result<Group, ()>;
 }
 
 impl GroupCreate for Tox {
-    fn create(&self) -> Group {
-        Group::from(self.core, unsafe { ffi::tox_add_groupchat(self.core) })
+    fn create(&self) -> Result<Group, ()> {
+        match unsafe { ffi::tox_add_groupchat(self.core) } {
+            -1 => Err(()),
+            num @ _ => Ok(Group::from(self.core, num))
+        }
     }
-    fn join(&self, friend: &Friend, data: &[u8]) -> Group {
-        Group::from(
+    fn join(&self, friend: &Friend, data: &[u8]) -> Result<Group, ()> {
+        match unsafe { ffi::tox_join_groupchat(
             self.core,
-            unsafe { ffi::tox_join_groupchat(
-                self.core,
-                friend.number as ::libc::int32_t,
-                data.as_ptr(),
-                data.len() as ::libc::uint16_t
-            ) }
-        )
+            friend.number as ::libc::int32_t,
+            data.as_ptr(),
+            data.len() as ::libc::uint16_t
+        ) } {
+            -1 => Err(()),
+            num @ _ => Ok(Group::from(self.core, num))
+        }
     }
 }
 

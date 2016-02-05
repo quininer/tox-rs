@@ -1,19 +1,21 @@
-use super::{ ffi, error, FriendAv };
+use super::{ ffi, error, AvFriend };
 use_as! {
     TOXAV_CALL_CONTROL as CallControl,
     TOXAV_FRIEND_CALL_STATE as CallState
 }
 
 pub trait Call {
+    /// Call.
     fn call(&self, audio_bitrate: u32, video_bitrate: u32) -> Result<(), error::CallErr>;
+    /// Answer.
     fn answer(&self, audio_bitrate: u32, video_bitrate: u32) -> Result<(), error::AnswerErr>;
+    /// Control Call.
     fn control(&self, control: CallControl) -> Result<(), error::CallControlErr>;
+    /// Set Bit Rate.
     fn set_bitrate(&self, audio_bitrate: i32, video_bitrate: i32) -> Result<(), error::BitRateSetErr>;
-    fn send_audio(&self, pcm: &[i16], sample_count: usize, channels: u8, sampling_rate: u32) -> Result<(), error::SendFrameErr>;
-    fn send_video(&self, width: u16, height: u16, y: &[u8], u: &[u8], v: &[u8]) -> Result<(), error::SendFrameErr>;
 }
 
-impl Call for FriendAv {
+impl Call for AvFriend {
     fn call(&self, audio_bitrate: u32, video_bitrate: u32) -> Result<(), error::CallErr> {
         out!( bool
             err,
@@ -60,39 +62,6 @@ impl Call for FriendAv {
                 self.number,
                 audio_bitrate,
                 video_bitrate,
-                &mut err
-            )
-        )
-    }
-
-    fn send_audio(&self, pcm: &[i16], sample_count: usize, channels: u8, sampling_rate: u32) -> Result<(), error::SendFrameErr> {
-        out!( bool
-            err,
-            ffi::toxav_audio_send_frame(
-                self.core,
-                self.number,
-                pcm.as_ptr(),
-                sample_count,
-                // pcm.len() / channels as usize,
-                // sampling_rate as usize * 10 / 1000,
-                channels,
-                sampling_rate,
-                &mut err
-            )
-        )
-    }
-
-    fn send_video(&self, width: u16, height: u16, y: &[u8], u: &[u8], v: &[u8]) -> Result<(), error::SendFrameErr> {
-        out!( bool
-            err,
-            ffi::toxav_video_send_frame(
-                self.core,
-                self.number,
-                width,
-                height,
-                y.as_ptr(),
-                u.as_ptr(),
-                v.as_ptr(),
                 &mut err
             )
         )

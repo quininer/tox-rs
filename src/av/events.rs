@@ -6,17 +6,22 @@ use std::slice;
 use libc::*;
 
 use ::core::Listen;
-use super::{ ffi, ToxAv, FriendAv };
+use super::{ ffi, ToxAv, AvFriend };
 use super::call::CallState;
 
 
 #[derive(Clone, Debug)]
 pub enum AvEvent {
-    FriendCall(FriendAv, bool, bool),
-    FriendCallState(FriendAv, CallState),
-    FriendBitRateStatus(FriendAv, u32, u32),
-    FriendAudioFrameReceive(FriendAv, Vec<i16>, usize, u8, u32),
-    FriendVideoFrameReceive(FriendAv, u16, u16, Vec<u8>, Vec<u8>, Vec<u8>, i32, i32, i32)
+    /// Friend Call, `[friendav, audio enable, video enable].`
+    FriendCall(AvFriend, bool, bool),
+    /// Friend Call State.
+    FriendCallState(AvFriend, CallState),
+    /// Friend Bitrate Status, `[friendav, audio bitrate, video bitrate].`
+    FriendBitRateStatus(AvFriend, u32, u32),
+    /// Friend Audio frame receive, `[friendav, pcm, sample_count, channels, sampling_rate].`
+    FriendAudioFrameReceive(AvFriend, Vec<i16>, usize, u8, u32),
+    /// Friend Video frame receive, `[friendav, width, height, y, u, v, ystride, ustride, vstride].`
+    FriendVideoFrameReceive(AvFriend, u16, u16, Vec<u8>, Vec<u8>, Vec<u8>, i32, i32, i32)
 }
 
 
@@ -59,7 +64,7 @@ extern "C" fn on_call(
     unsafe {
         let sender: &Sender<AvEvent> = transmute(tx);
         sender.send(AvEvent::FriendCall(
-            FriendAv::from(core, friend_number),
+            AvFriend::from(core, friend_number),
             audio_enabled,
             video_enabled
         )).ok();
@@ -75,7 +80,7 @@ extern "C" fn on_call_state(
     unsafe {
         let sender: &Sender<AvEvent> = transmute(tx);
         sender.send(AvEvent::FriendCallState(
-            FriendAv::from(core, friend_number),
+            AvFriend::from(core, friend_number),
             transmute(state)
         )).ok();
     }
@@ -91,7 +96,7 @@ extern "C" fn on_bit_rate_status(
     unsafe {
         let sender: &Sender<AvEvent> = transmute(tx);
         sender.send(AvEvent::FriendBitRateStatus(
-            FriendAv::from(core, friend_number),
+            AvFriend::from(core, friend_number),
             audio_bitrate,
             video_bitrate
         )).ok();
@@ -110,7 +115,7 @@ extern "C" fn on_audio_receive_frame(
     unsafe {
         let sender: &Sender<AvEvent> = transmute(tx);
         sender.send(AvEvent::FriendAudioFrameReceive(
-            FriendAv::from(core, friend_number),
+            AvFriend::from(core, friend_number),
             slice::from_raw_parts(pcm, sample_count * channels as usize).into(),
             sample_count,
             channels,
@@ -135,7 +140,7 @@ extern "C" fn on_video_receive_frame(
     unsafe {
         let sender: &Sender<AvEvent> = transmute(tx);
         sender.send(AvEvent::FriendVideoFrameReceive(
-            FriendAv::from(core, friend_number),
+            AvFriend::from(core, friend_number),
             width,
             height,
             slice::from_raw_parts(

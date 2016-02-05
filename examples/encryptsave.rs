@@ -43,11 +43,13 @@ fn main() {
                 .map(|s| s.into())
                 .unwrap_or_else(|| askpass(b"~").unsecure().into());
             let input = read(matches.value_of("INPUT").unwrap());
+
             let output = match matches.subcommand_name() {
                 Some("en") => pass_encrypt(&passphrase, &input).unwrap(),
                 Some("de") => pass_decrypt(&passphrase, &input).unwrap(),
                 _ => unreachable!()
             };
+
             match sub.value_of("output") {
                 Some(path) => write(path, &output),
                 None => {

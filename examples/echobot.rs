@@ -10,12 +10,14 @@ use tox::core::{
     FriendManage
 };
 use tox::core::file::{ FileKind, FileControl, FileOperate, FileManage };
-use tox::av::{ ToxAv, AvEvent };
-use tox::av::toav::{ ToAv, ToTox};
-use tox::av::call::{ Call };
+use tox::av::{ ToxAv, AvEvent, AvSend, Call };
+use tox::av::toav::{ ToAv, ToTox };
 
 #[cfg(feature = "groupchat")]
-use tox::core::group::{ GroupManage, GroupCreate };
+use tox::core::group::{ GroupManage, GroupCreate, GroupType };
+
+#[cfg(feature = "groupchat")]
+use tox::av::AvGroupCreate;
 
 
 fn main() {
@@ -32,7 +34,7 @@ fn main() {
 
     im.set_name("echobot").ok();
     println!("{}", &im.address());
-    im.bootstrap("127.0.0.1:33445",  "269E0A8D082560545170ED8CF16D902615265B04F0E8AD82C7665DDFC3FF5A6C".parse().unwrap()).ok();
+    im.bootstrap("127.0.0.1:33445", "269E0A8D082560545170ED8CF16D902615265B04F0E8AD82C7665DDFC3FF5A6C".parse().unwrap()).ok();
     let mut buffer: Vec<u8> = Vec::new();
 
     let toxiter = im.iterate();
@@ -52,6 +54,12 @@ fn main() {
             },
             Ok(Event::FriendMessage(friend, message_type, message)) => {
                 match message.as_slice() {
+                    b"hi" => {
+                        friend.say(format!(
+                            "hi, {}.",
+                            String::from_utf8_lossy(&friend.name().unwrap())
+                        )).ok();
+                    },
                     b"save" => {
                         File::create("recvfile").unwrap()
                             .write(&buffer).unwrap();
@@ -93,8 +101,15 @@ fn main() {
             },
 
             #[cfg(feature = "groupchat")]
-            Ok(Event::GroupInvite(friend, _, token)) => {
-                im.join(&friend, &token);
+            Ok(Event::GroupInvite(friend, ty, token)) => {
+                match ty {
+                    GroupType::TEXT => im.join(&friend, &token).ok(),
+                    GroupType::AV => {
+                        im.join_av(&friend, &token, Box::new(|g, _, _, _, _, _| {
+                            g.say("meow~").ok();
+                        })).ok()
+                    }
+                };
             },
 
             #[cfg(feature = "groupchat")]
@@ -118,18 +133,18 @@ fn main() {
 
         imav._iterate();
         match aviter.try_recv() {
-            Ok(AvEvent::FriendCall(friendav, a, v)) => {
-                friendav.to_tox(&im).say("Av~").unwrap();
-                friendav.answer(
+            Ok(AvEvent::FriendCall(avfriend, a, v)) => {
+                avfriend.to_tox(&im).say("Av~").unwrap();
+                avfriend.answer(
                     if a { 48 } else { 0 },
                     if v { 5000 } else { 0 }
                 ).unwrap();
             },
-            Ok(AvEvent::FriendAudioFrameReceive(friendav, pcm, count, chan, rate)) => {
+            Ok(AvEvent::FriendAudioFrameReceive(avfriend, pcm, count, chan, rate)) => {
                 // TODO save to file
-                friendav.send_audio(&pcm, count, chan, rate).ok();
+                avfriend.send_audio(&pcm, count, chan, rate).ok();
             },
-            Ok(AvEvent::FriendVideoFrameReceive(friendav, w, h, y, u, v, ys, us, vs)) => {
+            Ok(AvEvent::FriendVideoFrameReceive(avfriend, w, h, y, u, v, ys, us, vs)) => {
                 // TODO save to file
                 // FIXME ugly
                 let mut yy = Vec::new();
@@ -146,7 +161,7 @@ fn main() {
                     uu.append(&mut uuu);
                     vv.append(&mut vvv);
                 }
-                friendav.send_video(w, h, &yy, &uu, &vv).ok();
+                avfriend.send_video(w, h, &yy, &uu, &vv).ok();
             },
             Err(_) => (),
             e @ _ => println!("AvEvent: {:?}", e)

@@ -1,15 +1,24 @@
-pub mod ffi;
+mod ffi;
+mod send;
+mod friend;
 pub mod error;
-pub mod friend;
 pub mod toav;
 pub mod events;
 pub mod call;
 
+#[cfg(feature = "groupchat")]
+mod group;
+
 use std::mem::transmute;
 use ::core::Tox;
 pub use self::events::AvEvent;
-pub use self::friend::FriendAv;
+pub use self::friend::AvFriend;
 pub use self::call::Call;
+pub use self::send::AvSend;
+
+#[cfg(feature = "groupchat")]
+pub use self::group::{ AvGroupCreate, AvGroupCallback };
+
 
 /// ToxAv.
 #[derive(Clone, Debug)]
