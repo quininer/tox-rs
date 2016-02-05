@@ -16,7 +16,6 @@ git = "https://github.com/quininer/rust-ffigen.git"
 [dev-dependencies]
 clap = "*"
 secstr = "*"
-term_grid = "*"
 
 [dev-dependencies.ttyaskpass]
 path = "../../sec-about/ttyaskpass"

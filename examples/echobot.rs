@@ -1,9 +1,9 @@
 extern crate tox;
 
-use std::path::Path;
 use std::fs::File;
-use std::io::{ Write, Read };
+use std::path::Path;
 use std::thread::sleep;
+use std::io::{ Write, Read };
 use tox::core::{
     ToxOptions, Event,
     Network, Status, Chat, Listen,
@@ -20,16 +20,22 @@ use tox::core::group::{ GroupManage, GroupCreate, GroupType };
 use tox::av::AvGroupCreate;
 
 
+macro_rules! try_read {
+    ( $path:expr ) => {
+        if $path.is_file() {
+            let mut data = Vec::new();
+            File::open($path).unwrap()
+                .read_to_end(&mut data).unwrap();
+            ToxOptions::new().from(&data).generate()
+        } else {
+            ToxOptions::new().generate()
+        }.unwrap();
+    }
+}
+
 fn main() {
-    let profile = Path::new("echobot.tox");
-    let mut im = if profile.is_file() {
-        let mut data = Vec::new();
-        File::open(profile).unwrap()
-            .read_to_end(&mut data).unwrap();
-        ToxOptions::new().from(&data).generate()
-    } else {
-        ToxOptions::new().generate()
-    }.unwrap();
+    let path = Path::new("echobot.tox");
+    let mut im = try_read!(path);
     let mut imav = ToxAv::new(&im).unwrap();
 
     im.set_name("echobot").ok();
@@ -48,7 +54,7 @@ fn main() {
             },
             Ok(Event::RequestFriend(pk, _)) => {
                 if im.add_friend(pk).is_ok() {
-                    File::create("echobot.tox").unwrap()
+                    File::create(path).unwrap()
                         .write(&im.save()).unwrap();
                 }
             },
@@ -83,7 +89,7 @@ fn main() {
                 };
             },
             Ok(Event::FriendFileChunkRequest(_, file, pos, size)) => {
-                file.send(pos, &buffer[pos as usize..pos as usize+size]).ok();
+                file.send(pos, &buffer[pos as usize .. pos as usize+size]).ok();
             },
 
             Ok(Event::FriendFileRecv(friend, kind, file, size, name)) => {

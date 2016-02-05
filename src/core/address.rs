@@ -17,13 +17,13 @@ macro_rules! to_slice {
 }
 
 /// Public Key.
-#[derive(PartialEq, Clone, Debug)]
+#[derive(Clone, Debug, Ord, Eq, PartialEq, PartialOrd)]
 pub struct PublicKey {
     inner: [u8; TOX_PUBLIC_KEY_SIZE]
 }
 
 /// Tox Address.
-#[derive(PartialEq, Clone, Debug)]
+#[derive(Clone, Debug, Ord, Eq, PartialEq, PartialOrd)]
 pub struct Address {
     publickey: PublicKey,
     nospam: [u8; 4],
@@ -43,7 +43,7 @@ impl<V> From<V> for Address where V: Into<Vec<u8>> {
         let (pk, nc) = v.split_at(TOX_PUBLIC_KEY_SIZE);
         let (nospam, checksum) = nc.split_at(4);
         Address {
-            publickey: PublicKey { inner: to_slice![pk; TOX_PUBLIC_KEY_SIZE] },
+            publickey: pk.into(),
             nospam: to_slice![nospam; 4],
             checksum: to_slice![checksum; 2]
         }
@@ -90,7 +90,7 @@ impl FromStr for PublicKey {
     fn from_str(s: &str) -> Result<PublicKey, error::AddressParserErr> {
         let key = try!(s.from_hex());
         if key.len() == TOX_PUBLIC_KEY_SIZE {
-            Ok(PublicKey { inner: to_slice![key; TOX_PUBLIC_KEY_SIZE] })
+            Ok(key.into())
         } else {
             Err(error::AddressParserErr::InvalidLength)
         }

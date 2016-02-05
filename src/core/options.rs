@@ -1,4 +1,6 @@
-use std::ffi::{ CString, NulError };
+use std::net::ToSocketAddrs;
+use std::ffi::CString;
+use ::utils::addr_to_string;
 use super::ffi;
 use_as! {
     TOX_SAVEDATA_TYPE as SavedataType,
@@ -33,9 +35,10 @@ impl ToxOptions {
     }
 
     /// Use Proxy.
-    pub fn proxy(mut self, pty: ProxyType, host: &str, port: u16) -> Result<ToxOptions, NulError> {
+    pub fn proxy<A: ToSocketAddrs>(mut self, pty: ProxyType, addr: A) -> Result<ToxOptions, ::std::io::Error> {
+        let (host, port) = try!(addr_to_string(addr));
         self.opts.proxy_type = pty;
-        self.opts.proxy_host = try!(CString::new(host)).as_ptr();
+        self.opts.proxy_host = unsafe { CString::from_vec_unchecked(host.into()).as_ptr() };
         self.opts.proxy_port = port;
         Ok(self)
     }
