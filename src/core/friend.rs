@@ -1,5 +1,6 @@
 use chrono::NaiveDateTime;
-use super::{ ffi, Tox, Address, PublicKey, error };
+use ::address::{ Address, PublicKey };
+use super::{ ffi, Tox, error };
 
 
 /// Friend.

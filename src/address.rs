@@ -1,8 +1,7 @@
 use std::str::FromStr;
 use std::fmt;
-use rustc_serialize::hex::{ FromHex, ToHex };
-use super::vars::{ TOX_PUBLIC_KEY_SIZE, TOX_ADDRESS_SIZE };
-use super::error;
+use rustc_serialize::hex::{ FromHex, ToHex, FromHexError };
+use ::core::vars::{ TOX_PUBLIC_KEY_SIZE, TOX_ADDRESS_SIZE };
 
 
 macro_rules! to_slice {
@@ -17,13 +16,13 @@ macro_rules! to_slice {
 }
 
 /// Public Key.
-#[derive(Clone, Debug, Ord, Eq, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, Ord, Eq, PartialEq, PartialOrd, Hash)]
 pub struct PublicKey {
     inner: [u8; TOX_PUBLIC_KEY_SIZE]
 }
 
 /// Tox Address.
-#[derive(Clone, Debug, Ord, Eq, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, Ord, Eq, PartialEq, PartialOrd, Hash)]
 pub struct Address {
     publickey: PublicKey,
     nospam: [u8; 4],
@@ -77,7 +76,7 @@ impl Address {
 /// extern crate rustc_serialize;
 /// extern crate tox;
 /// use rustc_serialize::hex::ToHex;
-/// use tox::core::PublicKey;
+/// use tox::address::PublicKey;
 ///
 /// fn main() {
 ///     let hex = "EDF5A5BE8DFFC1DDFAACC71A0C0FCEEDE7BED4F3FBF9C54D502BE66A297DC374";
@@ -86,13 +85,13 @@ impl Address {
 /// }
 /// ```
 impl FromStr for PublicKey {
-    type Err = error::AddressParserErr;
-    fn from_str(s: &str) -> Result<PublicKey, error::AddressParserErr> {
+    type Err = AddressParserErr;
+    fn from_str(s: &str) -> Result<PublicKey, AddressParserErr> {
         let key = try!(s.from_hex());
         if key.len() == TOX_PUBLIC_KEY_SIZE {
             Ok(key.into())
         } else {
-            Err(error::AddressParserErr::InvalidLength)
+            Err(AddressParserErr::InvalidLength)
         }
     }
 }
@@ -109,7 +108,7 @@ impl AsRef<[u8]> for PublicKey {
 /// extern crate tox;
 /// use rustc_serialize::hex::ToHex;
 /// use tox::core::vars::TOX_PUBLIC_KEY_SIZE;
-/// use tox::core::{ Address, PublicKey };
+/// use tox::address::{ Address, PublicKey };
 ///
 /// fn main() {
 ///     let hex = "EDF5A5BE8DFFC1DDFAACC71A0C0FCEEDE7BED4F3FBF9C54D502BE66A297DC37469CDD2311170";
@@ -122,8 +121,8 @@ impl AsRef<[u8]> for PublicKey {
 /// }
 /// ```
 impl FromStr for Address {
-    type Err = error::AddressParserErr;
-    fn from_str(s: &str) -> Result<Address, error::AddressParserErr> {
+    type Err = AddressParserErr;
+    fn from_str(s: &str) -> Result<Address, AddressParserErr> {
         if s.len() == TOX_ADDRESS_SIZE * 2 {
             let (pk, nc) = s.split_at(TOX_PUBLIC_KEY_SIZE * 2);
             let (nospam, checksum) = nc.split_at(4 * 2);
@@ -135,10 +134,10 @@ impl FromStr for Address {
             if address.check() {
                 Ok(address)
             } else {
-                Err(error::AddressParserErr::InvalidChecksum)
+                Err(AddressParserErr::InvalidChecksum)
             }
         } else {
-            Err(error::AddressParserErr::InvalidLength)
+            Err(AddressParserErr::InvalidLength)
         }
     }
 }
@@ -158,5 +157,19 @@ impl fmt::Display for PublicKey {
 impl fmt::Display for Address {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.out().to_hex().to_uppercase())
+    }
+}
+
+
+#[derive(Debug)]
+pub enum AddressParserErr {
+    InvalidLength,
+    InvalidChecksum,
+    HexError(FromHexError)
+}
+
+impl From<FromHexError> for AddressParserErr {
+    fn from(err: FromHexError) -> AddressParserErr {
+        AddressParserErr::HexError(err)
     }
 }

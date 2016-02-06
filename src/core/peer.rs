@@ -1,6 +1,7 @@
+use ::address::PublicKey;
 use super::{
     ffi, error, vars,
-    Tox, Group, PublicKey,
+    Tox, Group,
     Status, Chat, FriendManage
 };
 use super::chat::{ MessageType, MessageID };

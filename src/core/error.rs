@@ -1,5 +1,4 @@
 use std::io;
-use rustc_serialize::hex::FromHexError;
 use_as! {
     TOX_ERR_NEW as NewErr,
     TOX_ERR_FRIEND_ADD as AddFriendErr,
@@ -38,20 +37,6 @@ impl From<QueryFriendErr> for GetStatusErr {
 impl From<GetFriendPKErr> for GetStatusErr {
     fn from(err: GetFriendPKErr) -> GetStatusErr {
         GetStatusErr::GetPK(err)
-    }
-}
-
-
-#[derive(Debug)]
-pub enum AddressParserErr {
-    InvalidLength,
-    InvalidChecksum,
-    HexError(FromHexError)
-}
-
-impl From<FromHexError> for AddressParserErr {
-    fn from(err: FromHexError) -> AddressParserErr {
-        AddressParserErr::HexError(err)
     }
 }
 

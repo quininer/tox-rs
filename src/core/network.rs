@@ -1,6 +1,7 @@
 use std::ffi::CString;
 use std::net::ToSocketAddrs;
-use super::{ ffi, Tox, error, vars, PublicKey };
+use super::{ ffi, Tox, error, vars };
+use ::address::PublicKey;
 use ::utils::addr_to_string;
 
 

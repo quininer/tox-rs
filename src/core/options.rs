@@ -53,9 +53,17 @@ impl ToxOptions {
 
     /// Read Profile data.
     pub fn from(mut self, data: &[u8]) -> ToxOptions {
-        self.opts.savedata_type = SavedataType::TOX_SAVE;
+        if self.opts.savedata_type == SavedataType::NONE {
+            self.opts.savedata_type = SavedataType::TOX_SAVE;
+        }
         self.opts.savedata_data = data.as_ptr();
         self.opts.savedata_length = data.len();
+        self
+    }
+
+    /// is secretkey.
+    pub fn secretkey(mut self) -> ToxOptions {
+        self.opts.savedata_type = SavedataType::SECRET_KEY;
         self
     }
 

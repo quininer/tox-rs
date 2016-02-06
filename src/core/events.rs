@@ -12,9 +12,10 @@ use super::group::{ GroupType, PeerChange, Group };
 #[cfg(feature = "groupchat")]
 use super::peer::Peer;
 
+use ::address::PublicKey;
 use super::{
     ffi, status, vars,
-    Tox, Friend, PublicKey, File
+    Tox, Friend, File
 };
 
 

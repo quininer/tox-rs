@@ -9,8 +9,9 @@ use std::io::{ stdout, Read, Write };
 use clap::{ App, Arg, SubCommand };
 use secstr::SecStr;
 use ttyaskpass::askpass;
-use tox::core::{ Tox, ToxOptions, Status, FriendManage, PublicKey };
+use tox::core::{ Tox, ToxOptions, Status, FriendManage };
 use tox::encryptsave::{ is_encrypted, ToxPassKey };
+use tox::address::PublicKey;
 
 
 fn read<P: AsRef<Path>>(path: P, passphrase: Option<&str>) -> (Tox, Option<SecStr>) {

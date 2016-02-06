@@ -7,7 +7,6 @@ pub mod chat;
 pub mod file;
 mod friend;
 mod network;
-mod address;
 mod custom;
 mod events;
 
@@ -21,7 +20,6 @@ pub use self::options::ToxOptions;
 pub use self::status::Status;
 pub use self::network::Network;
 pub use self::friend::{ Friend, FriendManage };
-pub use self::address::{ PublicKey, Address };
 pub use self::chat::Chat;
 pub use self::custom::Packet;
 pub use self::events::{ Event, Listen };
@@ -63,7 +61,7 @@ impl Tox {
     }
 
     /// Get Address.
-    pub fn address(&self) -> Address {
+    pub fn address(&self) -> ::address::Address {
         out!( get
             out <- vec_with!(vars::TOX_ADDRESS_SIZE),
             ffi::tox_self_get_address(self.core, out.as_mut_ptr())
