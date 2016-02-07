@@ -2,8 +2,8 @@ extern crate tox;
 
 use std::fs::File;
 use std::path::Path;
-use std::thread::sleep;
 use std::io::{ Write, Read };
+use std::thread::{ spawn, sleep };
 use tox::core::{
     ToxOptions, Event,
     Network, Status, Chat, Listen,
@@ -45,6 +45,9 @@ fn main() {
 
     let toxiter = im.iterate();
     let aviter = imav.iterate();
+    let mut loopav = imav.clone();
+
+    spawn(move || loop { sleep(loopav.interval()) });
 
     'main: loop {
         sleep(im.interval());
@@ -137,13 +140,13 @@ fn main() {
             e @ _ => println!("Event: {:?}", e)
         };
 
-        imav._iterate();
+        // imav._iterate();
         match aviter.try_recv() {
             Ok(AvEvent::FriendCall(avfriend, a, v)) => {
                 avfriend.to_tox(&im).say("Av~").unwrap();
                 avfriend.answer(
                     if a { 48 } else { 0 },
-                    if v { 5000 } else { 0 }
+                    if v { 500 } else { 0 }
                 ).unwrap();
             },
             Ok(AvEvent::FriendAudioFrameReceive(avfriend, pcm, count, chan, rate)) => {
