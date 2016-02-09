@@ -129,7 +129,7 @@ fn main() {
                 println!(
                     "Group {} Peers {:?}",
                     group.number,
-                    group.peers().iter()
+                    group.peers().unwrap().iter()
                         .map(|p| p.name().unwrap())
                         .map(|n| String::from_utf8(n).ok())
                         .collect::<Vec<Option<String>>>()

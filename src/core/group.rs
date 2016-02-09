@@ -112,28 +112,29 @@ impl Chat for Group {
 /// Manage Groupchat.
 pub trait GroupManage {
     /// Get Group Title.
-    fn title(&self) -> Vec<u8>;
+    fn title(&self) -> Result<Vec<u8>, ()>;
     /// Set Group Title.
     fn set_title(&self, title: &[u8]) -> bool;
     /// Get Peer list.
-    fn peers(&self) -> Vec<Peer>;
+    fn peers(&self) -> Result<Vec<Peer>, ()>;
     // fn peers_name(&self) -> Vec<Vec<u8>>;
     // fn peers_pk(&self) -> Vec<PublicKey>;
     /// Get Group type.
-    fn get_type(&self) -> GroupType;
+    fn get_type(&self) -> Result<GroupType, ()>;
 }
 
 impl GroupManage for Group {
-    fn title(&self) -> Vec<u8> {
-        out!( get
-            out <- vec_with!(vars::TOX_MAX_NAME_LENGTH),
-            ffi::tox_group_get_title(
-                self.core,
-                self.number,
-                out.as_mut_ptr(),
-                out.len() as ::libc::uint32_t
-            )
-        )
+    fn title(&self) -> Result<Vec<u8>, ()> {
+        let mut out = unsafe { vec_with!(vars::TOX_MAX_NAME_LENGTH) };
+        match unsafe { ffi::tox_group_get_title(
+            self.core,
+            self.number,
+            out.as_mut_ptr(),
+            out.len() as ::libc::uint32_t
+        ) } {
+            -1 => Err(()),
+            _ => Ok(out)
+        }
     }
 
     fn set_title(&self, title: &[u8]) -> bool {
@@ -145,20 +146,27 @@ impl GroupManage for Group {
         ) == 0 }
     }
 
-    fn peers(&self) -> Vec<Peer> {
-        let count = unsafe { ffi::tox_group_number_peers(
+    fn peers(&self) -> Result<Vec<Peer>, ()> {
+        match unsafe { ffi::tox_group_number_peers(
             self.core,
             self.number
-        ) };
-        (0..count)
-            .map(|pn| Peer::from(self, pn))
-            .collect()
+        ) } {
+            -1 => Err(()),
+            count @ _ => Ok(
+                (0..count)
+                    .map(|pn| Peer::from(self, pn))
+                    .collect()
+            )
+        }
     }
 
-    fn get_type(&self) -> GroupType {
-        unsafe { transmute(ffi::tox_group_get_type(
+    fn get_type(&self) -> Result<GroupType, ()> {
+        unsafe { match ffi::tox_group_get_type(
             self.core,
             self.number
-        )) }
+        ) {
+            -1 => Err(()),
+            ty @ _ => Ok(transmute(ty))
+        } }
     }
 }
