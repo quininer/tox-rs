@@ -8,12 +8,12 @@ use super::{ ffi };
 pub type AvGroupCallback = Fn(Group, Peer, &[i16], u32, u8, u32);
 
 pub trait AvGroupCreate {
-    fn create_av(&self, cb: Box<AvGroupCallback>) -> Result<Group, ()>;
+    fn create_group_av(&self, cb: Box<AvGroupCallback>) -> Result<Group, ()>;
     fn join_av(&self, friend: &Friend, data: &[u8], cb: Box<AvGroupCallback>) -> Result<Group, ()>;
 }
 
 impl AvGroupCreate for Tox {
-    fn create_av(&self, cb: Box<AvGroupCallback>) -> Result<Group, ()> {
+    fn create_group_av(&self, cb: Box<AvGroupCallback>) -> Result<Group, ()> {
         match unsafe { ffi::toxav_add_av_groupchat(
             transmute(self.core),
             on_group_av,

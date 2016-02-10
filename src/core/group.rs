@@ -35,7 +35,7 @@ impl Group {
         unsafe { ffi::tox_del_groupchat(self.core, self.number) == 0 }
     }
     /// Invite friend to GroupChat.
-    pub fn invite(&self, friend: Friend) -> bool {
+    pub fn invite(&self, friend: &Friend) -> bool {
         unsafe { ffi::tox_invite_friend(
             self.core,
             friend.number as ::libc::int32_t,
@@ -48,13 +48,13 @@ impl Group {
 /// Create GroupChat.
 pub trait GroupCreate {
     /// Create GroupChat.
-    fn create(&self) -> Result<Group, ()>;
+    fn create_group(&self) -> Result<Group, ()>;
     /// Join GroupChat.
     fn join(&self, friend: &Friend, data: &[u8]) -> Result<Group, ()>;
 }
 
 impl GroupCreate for Tox {
-    fn create(&self) -> Result<Group, ()> {
+    fn create_group(&self) -> Result<Group, ()> {
         match unsafe { ffi::tox_add_groupchat(self.core) } {
             -1 => Err(()),
             num @ _ => Ok(Group::from(self.core, num))
