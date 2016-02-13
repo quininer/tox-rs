@@ -16,13 +16,13 @@ macro_rules! to_slice {
 }
 
 /// Public Key.
-#[derive(Clone, Debug, Ord, Eq, PartialEq, PartialOrd, Hash)]
+#[derive(Copy, Clone, Debug, Ord, Eq, PartialEq, PartialOrd, Hash)]
 pub struct PublicKey {
     inner: [u8; TOX_PUBLIC_KEY_SIZE]
 }
 
 /// Tox Address.
-#[derive(Clone, Debug, Ord, Eq, PartialEq, PartialOrd, Hash)]
+#[derive(Copy, Clone, Debug, Ord, Eq, PartialEq, PartialOrd, Hash)]
 pub struct Address {
     publickey: PublicKey,
     nospam: [u8; 4],

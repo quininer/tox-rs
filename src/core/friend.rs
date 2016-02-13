@@ -75,7 +75,7 @@ pub trait FriendManage {
     /// Get Friend number by PublicKey.
     fn get_friend(&self, public_key: PublicKey) -> Result<Friend, error::PKGetFriendErr>;
     /// Friend exists?
-    fn exists_friend(&self, friend: Friend) -> bool;
+    fn exists_friend(&self, friend_number: u32) -> bool;
     /// Friend List.
     fn list_friend(&self) -> Vec<Friend>;
 }
@@ -114,8 +114,8 @@ impl FriendManage for Tox {
             )
         ).map(|r| Friend::from(self.core, r))
     }
-    fn exists_friend(&self, friend: Friend) -> bool {
-        unsafe { ffi::tox_friend_exists(self.core, friend.number) }
+    fn exists_friend(&self, friend_number: u32) -> bool {
+        unsafe { ffi::tox_friend_exists(self.core, friend_number) }
     }
     fn list_friend(&self) -> Vec<Friend> {
         unsafe {
