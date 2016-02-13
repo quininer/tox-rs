@@ -1,18 +1,17 @@
 use ::address::PublicKey;
 use super::{
     ffi, error, vars,
-    Tox, Group,
-    Status, Chat, FriendManage
+    Group,
+    Status
 };
-use super::chat::{ MessageType, MessageID };
 use super::status::{ Connection, UserStatus };
 
 
 /// GropuChat Peer.
 #[derive(Clone, Debug)]
 pub struct Peer {
-    group: Group,
-    number: i32
+    pub group: Group,
+    pub number: i32
 }
 
 impl Peer {
@@ -90,22 +89,5 @@ impl Status for Peer {
     /// unimplemented, TODO New GroupChat.
     fn connection_status(&self) -> Result<Connection, error::GetStatusErr> {
         unimplemented!()
-    }
-}
-
-
-/// Fallback Friend Message.
-impl Chat for Peer {
-    fn send<S: AsRef<[u8]>>(&self, ty: MessageType, message: S) -> Result<MessageID, error::SendMessageErr> {
-        try!(Tox::from(self.group.core).get_friend(
-            try!(self.publickey().map_err(|_| error::SendMessageErr::Group))
-        ).map_err(|_| error::SendMessageErr::Group))
-            .send(ty, message)
-    }
-    fn say<S: AsRef<[u8]>>(&self, message: S) -> Result<MessageID, error::SendMessageErr> {
-        self.send(MessageType::NORMAL, message)
-    }
-    fn action<S: AsRef<[u8]>>(&self, message: S) -> Result<MessageID, error::SendMessageErr> {
-        self.send(MessageType::ACTION, message)
     }
 }
