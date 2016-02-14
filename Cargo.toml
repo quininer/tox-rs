@@ -14,11 +14,11 @@ version = "0.1"
 git = "https://github.com/quininer/rust-ffigen.git"
 
 [dev-dependencies]
-clap = "*"
-secstr = "*"
+clap = "2.0"
+secstr = "0.2"
 
 [dev-dependencies.ttyaskpass]
-path = "../../sec-about/ttyaskpass"
+git = "https://github.com/quininer/ttyaskpass.git"
 
 [features]
 default = [ "groupchat" ]
