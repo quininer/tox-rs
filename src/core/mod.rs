@@ -122,3 +122,24 @@ impl Drop for Tox {
         unsafe { ffi::tox_kill(self.core); }
     }
 }
+
+
+pub fn version_major() -> usize {
+    unsafe { ffi::tox_version_major() as usize }
+}
+
+pub fn version_minor() -> usize {
+    unsafe { ffi::tox_version_minor() as usize }
+}
+
+pub fn version_patch() -> usize {
+    unsafe { ffi::tox_version_patch() as usize }
+}
+
+pub fn version_is_compatible(major: usize, minor: usize, patch: usize) -> bool {
+    unsafe { ffi::tox_version_is_compatible(
+        major as ::libc::uint32_t,
+        minor as ::libc::uint32_t,
+        patch as ::libc::uint32_t
+    ) }
+}
