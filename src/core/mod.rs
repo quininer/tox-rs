@@ -38,8 +38,6 @@ pub struct Tox {
     pub core: *mut ffi::Tox
 }
 
-unsafe impl Send for Tox {}
-
 impl Tox {
     /// from ToxOptions create Tox.
     pub fn new(opts: ToxOptions) -> Result<Tox, error::NewErr> {
