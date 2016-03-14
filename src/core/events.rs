@@ -469,7 +469,7 @@ extern "C" fn on_group_title(
         let group = Group::from(core, group_number);
         let peer_or = match peer_number {
             -1 => None,
-            num @ _ => Some(Peer::from(&group, num))
+            num => Some(Peer::from(&group, num))
         };
         sender.send(Event::GroupTitle(
             group,

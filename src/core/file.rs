@@ -109,7 +109,7 @@ impl FileManage for Friend {
                 kind as ::libc::uint32_t,
                 filesize,
                 fileid.map(|i| i.as_ptr())
-                    .unwrap_or_else(|| ::std::ptr::null()),
+                    .unwrap_or_else(::std::ptr::null),
                 filename.as_ptr(),
                 filename.len(),
                 &mut err

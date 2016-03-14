@@ -21,9 +21,10 @@ macro_rules! out {
     ( bool $err:ident, $exp:expr ) => {
         unsafe {
             let mut $err = ::std::mem::uninitialized();
-            match $exp {
-                true => Ok(()),
-                false => Err($err)
+            if $exp {
+                Ok(())
+            } else {
+                Err($err)
             }
         }
     };
@@ -33,7 +34,7 @@ macro_rules! out {
             let mut $err = ::std::mem::uninitialized();
             match $exp {
                 MAX => Err($err),
-                out @ _ => Ok(out)
+                out => Ok(out)
             }
         }
     };

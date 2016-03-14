@@ -26,9 +26,9 @@ macro_rules! try_read {
             let mut data = Vec::new();
             File::open($path).unwrap()
                 .read_to_end(&mut data).unwrap();
-            ToxOptions::new().from(&data).generate()
+            ToxOptions::default().from(&data).generate()
         } else {
-            ToxOptions::new().generate()
+            ToxOptions::default().generate()
         }.unwrap();
     }
 }

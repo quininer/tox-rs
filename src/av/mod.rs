@@ -29,7 +29,7 @@ pub struct ToxAv {
 impl ToxAv {
     pub fn new(tox: &Tox) -> Result<ToxAv, error::NewAVErr> {
         out!(err err, ffi::toxav_new(transmute(tox.core), &mut err))
-            .map(|o| ToxAv::from(o))
+            .map(ToxAv::from)
     }
 
     pub fn from(core: *mut ffi::ToxAV) -> ToxAv {

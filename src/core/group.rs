@@ -57,7 +57,7 @@ impl GroupCreate for Tox {
     fn create_group(&self) -> Result<Group, ()> {
         match unsafe { ffi::tox_add_groupchat(self.core) } {
             -1 => Err(()),
-            num @ _ => Ok(Group::from(self.core, num))
+            num => Ok(Group::from(self.core, num))
         }
     }
     fn join(&self, friend: &Friend, data: &[u8]) -> Result<Group, ()> {
@@ -68,7 +68,7 @@ impl GroupCreate for Tox {
             data.len() as ::libc::uint16_t
         ) } {
             -1 => Err(()),
-            num @ _ => Ok(Group::from(self.core, num))
+            num => Ok(Group::from(self.core, num))
         }
     }
 }
@@ -152,7 +152,7 @@ impl GroupManage for Group {
             self.number
         ) } {
             -1 => Err(()),
-            count @ _ => Ok(
+            count => Ok(
                 (0..count)
                     .map(|pn| Peer::from(self, pn))
                     .collect()
@@ -166,7 +166,7 @@ impl GroupManage for Group {
             self.number
         ) {
             -1 => Err(()),
-            ty @ _ => Ok(transmute(ty))
+            ty => Ok(transmute(ty))
         } }
     }
 }

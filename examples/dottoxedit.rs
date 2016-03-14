@@ -24,9 +24,9 @@ fn read<P: AsRef<Path>>(path: P, passphrase: Option<&str>) -> (Tox, Option<SecSt
         };
         let data = ToxPassKey::from(passphrase.clone(), &data).unwrap()
             .decrypt(&data).unwrap();
-        (ToxOptions::new().from(&data).generate().unwrap(), Some(passphrase))
+        (ToxOptions::default().from(&data).generate().unwrap(), Some(passphrase))
     } else {
-        (ToxOptions::new().from(&data).generate().unwrap(), None)
+        (ToxOptions::default().from(&data).generate().unwrap(), None)
     }
 }
 

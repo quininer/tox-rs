@@ -21,7 +21,9 @@ pub enum AvEvent {
     /// Friend Audio frame receive, `[friendav, pcm, sample_count, channels, sampling_rate].`
     FriendAudioFrameReceive(AvFriend, Vec<i16>, usize, u8, u32),
     /// Friend Video frame receive, `[friendav, width, height, y, u, v, ystride, ustride, vstride].`
-    FriendVideoFrameReceive(AvFriend, u16, u16, Vec<u8>, Vec<u8>, Vec<u8>, i32, i32, i32)
+    FriendVideoFrameReceive(AvFriend, u16, u16, Vec<u8>, Vec<u8>, Vec<u8>, i32, i32, i32),
+
+    GroupCall
 }
 
 

@@ -42,7 +42,7 @@ impl Tox {
     /// from ToxOptions create Tox.
     pub fn new(opts: ToxOptions) -> Result<Tox, error::NewErr> {
         out!(err err, ffi::tox_new(&opts.opts, &mut err))
-            .map(|o| Tox::from(o))
+            .map(Tox::from)
     }
 
     /// from raw ptr create Tox.

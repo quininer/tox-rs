@@ -14,14 +14,16 @@ pub struct ToxOptions {
     pub opts: ffi::Tox_Options
 }
 
-impl ToxOptions {
+impl Default for ToxOptions {
     /// Generate ToxOptions
-    pub fn new() -> ToxOptions {
+    fn default() -> ToxOptions {
         ToxOptions {
             opts: out!(get out, ffi::tox_options_default(&mut out))
         }
     }
+}
 
+impl ToxOptions {
     /// Use IPv6.
     pub fn ipv6(mut self, enable: bool) -> ToxOptions {
         self.opts.ipv6_enabled = enable;

@@ -20,7 +20,7 @@ impl AvGroupCreate for Tox {
             transmute(&cb)
         ) } {
             -1 => Err(()),
-            num @ _ => Ok(Group::from(self.core, num))
+            num => Ok(Group::from(self.core, num))
         }
     }
     fn join_av(&self, friend: &Friend, data: &[u8], cb: Box<AvGroupCallback>) -> Result<Group, ()> {
@@ -33,7 +33,7 @@ impl AvGroupCreate for Tox {
             transmute(&cb)
         ) } {
             -1 => Err(()),
-            num @ _ => Ok(Group::from(self.core, num))
+            num => Ok(Group::from(self.core, num))
         }
     }
 }

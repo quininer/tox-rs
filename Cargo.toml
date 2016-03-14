@@ -1,6 +1,6 @@
 [package]
 name = "tox"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["quininer <quininer@live.com>"]
 build = "build.rs"
 
@@ -10,7 +10,7 @@ chrono = "0.2"
 rustc-serialize = "0.3"
 
 [build-dependencies.ffigen]
-version = "0.1"
+version = "0.2"
 git = "https://github.com/quininer/rust-ffigen.git"
 
 [dev-dependencies]
