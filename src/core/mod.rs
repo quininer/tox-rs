@@ -16,8 +16,14 @@ pub mod group;
 #[cfg(feature = "groupchat")]
 mod peer;
 
+#[cfg(feature = "new-groupchat")]
+mod newgcgroup;
+
+#[cfg(feature = "new-groupchat")]
+mod newgcpeer;
+
 pub use self::options::ToxOptions;
-pub use self::status::Status;
+pub use self::status::{ Status, SetStatus };
 pub use self::network::Network;
 pub use self::friend::{ Friend, FriendManage };
 pub use self::chat::Chat;
@@ -30,6 +36,19 @@ pub use self::group::Group;
 
 #[cfg(feature = "groupchat")]
 pub use self::peer::Peer;
+
+#[cfg(feature = "new-groupchat")]
+pub mod group {
+    pub use super::newgcgroup::*;
+}
+
+#[cfg(feature = "new-groupchat")]
+mod peer {
+    pub use super::newgcpeer::*;
+}
+
+#[cfg(feature = "new-groupchat")]
+pub use self::group::Group;
 
 
 /// Tox.
@@ -79,26 +98,9 @@ impl Tox {
         unsafe { ffi::tox_self_get_nospam(self.core) }
     }
 
-    /// Set Name.
-    pub fn set_name<S: AsRef<[u8]>>(&self, name: S) -> Result<(), error::InfoSetErr> {
-        let name = name.as_ref();
-        out!( bool
-            err,
-            ffi::tox_self_set_name(
-                self.core,
-                name.as_ptr(),
-                name.len(),
-                &mut err
-            )
-        )
-    }
     /// Set Nospam code.
     pub fn set_nospam(&self, nospam: u32) {
         unsafe { ffi::tox_self_set_nospam(self.core, nospam) }
-    }
-    /// Set Status (NONE, AWAY, BUYS).
-    pub fn set_status(&self, status: status::UserStatus) {
-        unsafe { ffi::tox_self_set_status(self.core, status) }
     }
     /// Set Status Message.
     pub fn set_status_message<S: AsRef<[u8]>>(&self, message: S) -> Result<(), error::InfoSetErr> {

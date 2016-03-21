@@ -20,6 +20,33 @@ use_as! {
     TOX_ERR_FILE_GET as FileGetErr
 }
 
+#[cfg(feature = "new-groupchat")]
+use_as!{
+    TOX_ERR_GROUP_NEW as GroupNewErr,
+    TOX_ERR_GROUP_JOIN as GroupJoinErr,
+    TOX_ERR_GROUP_RECONNECT as GroupReconnectErr,
+    TOX_ERR_GROUP_LEAVE as GroupLeaveErr,
+    TOX_ERR_GROUP_SELF_QUERY as GroupSelfQueryErr,
+    TOX_ERR_GROUP_SELF_NAME_SET as GroupSelfNameSetErr,
+    TOX_ERR_GROUP_SELF_STATUS_SET as GroupSelfStatusSetErr,
+    TOX_ERR_GROUP_PEER_QUERY as GroupPeerQueryErr,
+    TOX_ERR_GROUP_STATE_QUERIES as GroupStateQueriesErr,
+    TOX_ERR_GROUP_TOPIC_SET as GroupTopicSetErr,
+    TOX_ERR_GROUP_SEND_MESSAGE as GroupSendMessageErr,
+    TOX_ERR_GROUP_SEND_PRIVATE_MESSAGE as GroupSendPrivateMessageErr,
+    TOX_ERR_GROUP_SEND_CUSTOM_PACKET as GroupSendCustomPacketErr,
+    TOX_ERR_GROUP_INVITE_FRIEND as GroupInviteFriendErr,
+    TOX_ERR_GROUP_INVITE_ACCEPT as GroupInviteAcceptErr,
+    TOX_ERR_GROUP_FOUNDER_SET_PASSWORD as GroupFounderSetPasswordErr,
+    TOX_ERR_GROUP_FOUNDER_SET_PRIVACY_STATE as GroupFounderSetPrivacyStateErr,
+    TOX_ERR_GROUP_FOUNDER_SET_PEER_LIMIT as GroupFounderSetPeerLimitErr,
+    TOX_ERR_GROUP_TOGGLE_IGNORE as GroupToggleIgnoreErr,
+    TOX_ERR_GROUP_MOD_SET_ROLE as GroupModSetRoleErr,
+    TOX_ERR_GROUP_MOD_REMOVE_PEER as GroupModRemovePeerErr,
+    TOX_ERR_GROUP_MOD_REMOVE_BAN as GroupModRemoveBanErr,
+    TOX_ERR_GROUP_BAN_QUERY as GroupBanQueryErr
+}
+
 
 #[derive(Debug)]
 pub enum GetStatusErr {

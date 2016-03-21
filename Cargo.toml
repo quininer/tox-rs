@@ -23,4 +23,4 @@ git = "https://github.com/quininer/ttyaskpass.git"
 [features]
 default = [ "groupchat" ]
 groupchat = []
-newgroupchat = []
+new-groupchat = []

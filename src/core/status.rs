@@ -132,3 +132,29 @@ impl Status for Friend {
         ).map_err(|err| err.into())
     }
 }
+
+pub trait SetStatus {
+    fn set_name<S: AsRef<[u8]>>(&self, name: S) -> Result<(), error::InfoSetErr>;
+    fn set_status(&self, status: status::UserStatus);
+}
+
+impl SetStatus for Tox {
+    /// Set Name.
+    pub fn set_name<S: AsRef<[u8]>>(&self, name: S) -> Result<(), error::InfoSetErr> {
+        let name = name.as_ref();
+        out!( bool
+            err,
+            ffi::tox_self_set_name(
+                self.core,
+                name.as_ptr(),
+                name.len(),
+                &mut err
+            )
+        )
+    }
+
+    /// Set Status (NONE, AWAY, BUYS).
+    pub fn set_status(&self, status: status::UserStatus) {
+        unsafe { ffi::tox_self_set_status(self.core, status) }
+    }
+}
