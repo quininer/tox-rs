@@ -6,7 +6,7 @@ fn main() {
     #[cfg(feature = "groupchat")]
     gen!("toxcore", ["tox/tox.h", "tox/tox_old.h"] -> "src/core/ffi.rs");
 
-    #[cfg(feature = "newgroupchat")]
+    #[cfg(feature = "new-groupchat")]
     gen!("toxcore", ["tox/tox.h"] -> "src/core/ffi.rs");
 
     gen!("toxav", ["tox/toxav.h"] -> "src/av/ffi.rs");

@@ -5,6 +5,7 @@ extern crate secstr;
 
 use std::fs::File;
 use std::path::Path;
+use std::collections::HashSet;
 use std::io::{ stdout, Read, Write };
 use clap::{ App, Arg, SubCommand };
 use secstr::SecStr;
@@ -63,7 +64,7 @@ fn main() {
                 .arg(Arg::from_usage("<PublicKey>... 'Friend Public Key.'")),
             SubCommand::with_name("merge").about("Merge other Profile.")
                 .arg(Arg::from_usage("<OTHER> 'other Profile.'")),
-            SubCommand::with_name("miss").about("Diff Firends with other Profile.")
+            SubCommand::with_name("diff").about("Diff Firends with other Profile.")
                 .arg(Arg::from_usage("<OTHER> 'other Profile.'"))
         ]);
     let mut help_buf = Vec::new();
@@ -71,7 +72,7 @@ fn main() {
     let matches = app.get_matches();
 
     match matches.subcommand_name() {
-        Some("self") | Some("list") | Some("set") | Some("add") | Some("del") | Some("merge") | Some("miss") => {
+        Some("self") | Some("list") | Some("set") | Some("add") | Some("del") | Some("merge") | Some("diff") => {
             let path = matches.value_of("PROFILE").expect("missing profile.");
             let (tox, mut passphrase) = read(path, matches.value_of("passwd"));
 
@@ -122,30 +123,22 @@ fn main() {
                             .delete().unwrap();
                     }
                 },
-                ("merge", Some(sub)) | ("miss", Some(sub)) => {
+                ("merge", Some(sub)) | ("diff", Some(sub)) => {
                     let (otox, _) = read(
                         sub.value_of("OTHER").expect("missing profile."),
                         None
                     );
                     let mpks = tox.list_friend().iter()
                         .map(|f| f.publickey().unwrap())
-                        .collect::<Vec<PublicKey>>();
+                        .collect::<HashSet<PublicKey>>();
                     let opks = otox.list_friend().iter()
                         .map(|f| f.publickey().unwrap())
-                        .collect::<Vec<PublicKey>>();
-                    for pk in opks {
-                        if !{
-                            let mut result = false;
-                            for e in &mpks {
-                                result = &pk == e || result;
-                            }
-                            result
-                        } {
-                            match matches.subcommand_name() {
-                                Some("merge") => { tox.add_friend(pk).unwrap(); },
-                                Some("miss") => println!("{}", pk),
-                                _ => unreachable!()
-                            }
+                        .collect::<HashSet<PublicKey>>();
+                    for &pk in mpks.symmetric_difference(&opks) {
+                        match matches.subcommand_name() {
+                            Some("merge") => { tox.add_friend(pk).unwrap(); },
+                            Some("diff") => println!("{}", pk),
+                            _ => unreachable!()
                         }
                     }
                 },
