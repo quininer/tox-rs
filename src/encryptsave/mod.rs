@@ -93,6 +93,7 @@ impl ToxPassKey {
 
     /// decryption
     pub fn decrypt(&self, data: &[u8]) -> Result<Vec<u8>, error::DecryptionErr> {
+    if data.len() <= PASS_ENCRYPTION_EXTRA_LENGTH { return Err(error::DecryptionErr::NULL) };
         out!( out
             out <- vec_with!(data.len() - PASS_ENCRYPTION_EXTRA_LENGTH),
             err,
@@ -128,6 +129,7 @@ pub fn pass_encrypt<S: AsRef<[u8]>>(passphrase: S, data: &[u8]) -> Result<Vec<u8
 /// use passphrase decryption
 pub fn pass_decrypt<S: AsRef<[u8]>>(passphrase: S, data: &[u8]) -> Result<Vec<u8>, error::DecryptionErr> {
     let passphrase = passphrase.as_ref();
+    if data.len() <= PASS_ENCRYPTION_EXTRA_LENGTH { return Err(error::DecryptionErr::NULL) };
     out!( out
         out <- vec_with!(data.len() - PASS_ENCRYPTION_EXTRA_LENGTH),
         err,
